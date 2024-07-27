@@ -59,7 +59,7 @@ export default function SignUp() {
             <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                     <FontAwesome style={styles.icon} name="user-circle-o" size={24} color="black" />
-                    <TextInput placeholder="Full Name" style={styles.input} />
+                    <TextInput accessibilityLabel='name input' placeholder="Full Name" style={styles.input} />
                 </View>
 
                 <View style={styles.inputWrapper}>
@@ -78,23 +78,24 @@ export default function SignUp() {
 
                 <View style={styles.inputWrapper}>
                     <MaterialCommunityIcons style={styles.icon} name="email" size={24} color="black" />
-                    <TextInput placeholder="Email" style={styles.input} />
+                    <TextInput accessibilityLabel='email input' placeholder="Email" style={styles.input} />
                 </View>
 
                 <View style={styles.inputWrapper}>
                     <FontAwesome5 style={styles.icon} name="key" size={24} color="black" />
-                    <TextInput placeholder="Password" secureTextEntry={true} style={styles.input} />
+                    <TextInput accessibilityLabel='password input' placeholder="Password" secureTextEntry={true} style={styles.input} />
 
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.signUpButton}>
+            <TouchableOpacity accessibilityLabel='signup button' style={styles.signUpButton}>
                 <Text style={styles.signUpButtonText}>Sign up</Text>
             </TouchableOpacity>
 
             <View style={styles.loginContainer}>
                 <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity
+                    accessibilityLabel='login button'
                     onPress={() => router.push("/home")}
                     style={styles.loginButton}>
                     <Text style={styles.loginButtonText}>Log in</Text>
