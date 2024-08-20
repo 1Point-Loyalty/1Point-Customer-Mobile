@@ -1,9 +1,148 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Image, SafeAreaView } from 'react-native';
+import PagerView from 'react-native-pager-view';
 
 export default function HomeScreen() {
+
+  // Array of pages to display
+  const pages = [
+    {
+      key: '1',
+      imageUri: 'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
+      text: 'Shawerma Plus has joined 1Point!',
+    },
+    {
+      key: '2',
+      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
+      text: 'Williams Fresh Cafe has joined 1Point!',
+    },
+    {
+      key: '3',
+      imageUri: 'https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8',
+      text: "Tahini's has joined 1Point!",
+    },
+  ];
+
+  const [currentPage, setCurrentPage] = useState(0);  // Track the current page
+  const pagerRef = useRef<PagerView>(null); // Reference to the pager view
+  const totalPages = pages.length; // Total number of pages
+
+  // Auto-scroll every 4 seconds to the next page in the list of pages 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPage(prevPage => {
+        // Calculate the next page to display 
+        const nextPage = (prevPage + 1) % totalPages;
+        // If the pagerRef is available, set the page to the next page
+        if (pagerRef.current) {
+          pagerRef.current.setPage(nextPage);
+        }
+        // Return the next page
+        return nextPage;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Render the NEW section pages
+  const renderPages = () => {
+    return (
+      // Use the PagerView component to display the pages 
+      <PagerView
+        style={styles.page}
+        initialPage={0}
+        ref={pagerRef}
+        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}>
+
+        {pages.map(page => (
+          <View style={styles.newSection} key={page.key}>
+            {page.imageUri ? (
+              <Image source={{ uri: page.imageUri }} style={styles.newBrandLogo} />
+            ) : null}
+            {page.imageUri ? (
+              <View style={styles.newLabelContainer}>
+                <Text style={styles.newLabel}>NEW</Text>
+              </View>
+            ) : null}
+            <Text style={styles.newText}>{page.text}</Text>
+          </View>
+        ))}
+
+      </PagerView>
+    );
+  };
+
+
+  // Render the dots to indicate the current page
+  const renderPageDots = () => {
+    return (
+      <View style={styles.dotsContainer}>
+        {pages.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              currentPage === index ? styles.activeDot : styles.inactiveDot,
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+
+
+  // Render the points section
+  const renderPointsSection = () => {
+    return (
+      <View style={styles.pointsSection}>
+
+        <View style={styles.row}>
+
+          <Text style={styles.label}>Current Point Balance:</Text>
+
+          <View style={styles.pointContainer}>
+
+            <Image
+              source={require('@/assets/images/1Point_Logo.png')}
+              style={styles.pointAmounts}
+            />
+            <Text style={styles.pointText}>1,978</Text>
+
+          </View>
+
+        </View>
+
+        <View style={styles.row}>
+
+          <Text style={styles.label}>Total Points Collected:</Text>
+
+          <View style={styles.pointContainer}>
+
+            <Image
+              source={require('@/assets/images/1Point_Logo.png')}
+              style={styles.pointAmounts}
+            />
+            <Text style={styles.pointText}>34,909</Text>
+
+          </View>
+
+        </View>
+
+        <View style={styles.row}>
+
+          <Text style={styles.label}>Last Transaction:</Text>
+          <Text style={styles.transactionText}>July 7th, 2024</Text>
+
+        </View>
+
+      </View>
+    );
+  };
+
+  // Render the home screen 
   return (
-    <View style={styles.main}>
+    <SafeAreaView style={styles.main}>
 
       <View style={styles.container}>
 
@@ -17,55 +156,16 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.newSection}>
-          <Image
-            source={{
-              uri: 'https://scontent.fyto3-1.fna.fbcdn.net/v/t39.30808-6/340850073_613777563957043_736834641686291111_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=TnqtXSuKsYkQ7kNvgEKIEjH&_nc_ht=scontent.fyto3-1.fna&oh=00_AYA-_g_ffcBLTXPBCVp5yxLBhdNhviGXmx5GftiHU1S96w&oe=66A89B95'
-            }}
-            style={styles.newBrandLogo}
-          />
-          <View style={styles.newLabelContainer}>
-            <Text style={styles.newLabel}>NEW</Text>
-          </View>
-          <Text style={styles.newText}>Shawerma Plus has joined 1Point!</Text>
-        </View>
+        {renderPages()}
+        {renderPageDots()}
 
       </View>
 
       <View style={styles.lower}>
-
-        <View style={styles.pointsSection}>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Current Point Balance:</Text>
-            <View style={styles.pointContainer}>
-              <Image
-                source={require('@/assets/images/1Point_Logo.png')}
-                style={styles.pointAmounts}
-              />
-              <Text style={styles.pointText}>1,978</Text>
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Total Points Collected:</Text>
-            <View style={styles.pointContainer}>
-              <Image
-                source={require('@/assets/images/1Point_Logo.png')}
-                style={styles.pointAmounts}
-              />
-              <Text style={styles.pointText}>34,909</Text>
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Last Transaction:</Text>
-            <Text style={styles.transactionText}>July 7th, 2024</Text>
-          </View>
-
-        </View>
+        {renderPointsSection()}
       </View>
-    </View>
+
+    </SafeAreaView >
   );
 };
 
@@ -90,7 +190,7 @@ const styles = StyleSheet.create({
   },
   lower: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 200,
     borderRadius: 32,
     backgroundColor: '#ggg',
     justifyContent: 'flex-end',
@@ -110,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     padding: 10,
     borderRadius: 32,
-    marginBottom: 20,
+    margin: 5,
     position: 'relative',
   },
   headerImage: {
@@ -126,8 +226,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   newBrandLogo: {
-    width: 113,
-    height: 113,
+    width: 120,
+    height: 120,
     marginRight: 10,
     borderRadius: 10,
     margin: 5,
@@ -188,5 +288,30 @@ const styles = StyleSheet.create({
   transactionText: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  page: {
+    flex: 1,
+    padding: 15,
+    paddingTop: 40,
+    backgroundColor: '#fff',
+    maxHeight: 200,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  activeDot: {
+    backgroundColor: 'black',
+  },
+  inactiveDot: {
+    backgroundColor: 'gray',
   },
 });

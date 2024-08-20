@@ -1,10 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Linking, SafeAreaView } from 'react-native';
+import CheckBox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import PhoneInput from 'react-native-phone-input';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 
@@ -13,10 +14,27 @@ import { useNavigation } from '@react-navigation/native';
 export default function SignUp() {
     const router = useRouter();
     const navigation = useNavigation();
+
+    // State variables for form inputs
+    const [fullName, setFullName] = useState('');
+    const [fullNameError, setFullNameError] = useState('');
+
     const [phoneNumber, setPhoneNumber] = useState('');
+
+    const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
+
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const [isSelected, setSelection] = useState(false);
+
+    const [textColor, setTextColor] = useState('black');
+    const [phoneTextColor, setPhoneTextColor] = useState('black');
 
     navigation.setOptions({ headerShown: false });
 
+    // List of countries for phone number (Canada only)
     const countriesList = [
         {
             name: 'Canada',
@@ -27,6 +45,20 @@ export default function SignUp() {
         },
     ];
 
+
+    // Function to validate full name input
+    const handleFullName = () => {
+        const splitName = fullName.split(' ');
+
+        if (splitName.length !== 2 || splitName[0].length < 2 || splitName[1].length < 2) {
+            setFullNameError('Please enter a valid first and last name');
+        }
+        else {
+            setFullNameError('');
+        }
+    };
+
+    // Function to format phone number input
     const formatPhoneNumber = (number: string) => {
         // Remove all non-digit characters
         const cleaned = ('' + number).replace(/\D/g, '');
@@ -40,13 +72,115 @@ export default function SignUp() {
         return limited;
     };
 
+    // Function to validate phone number input 
     const handlePhoneNumberChange = (number: string) => {
+
+        const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+        setPhoneNumber(number);
         const formattedNumber = formatPhoneNumber(number);
         setPhoneNumber(formattedNumber);
+        if (phonePattern.test(formattedNumber) === false) {
+            setPhoneTextColor('red');
+        }
+        else {
+            setPhoneTextColor('black');
+        }
     };
 
+    // Function to validate email input
+    const handleEmail = () => {
+        // format for email: characters@characters.characters
+        let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+        if (emailFormat.test(email) === false) {
+            setEmailError('Please enter a valid email address');
+        }
+        else {
+            setEmailError('');
+        }
+    };
+
+    // Function to validate terms of service checkbox
+    const handleTerms = () => {
+        if (isSelected === false) {
+            setTextColor('red');
+        }
+        else {
+            setTextColor('black');
+        }
+    };
+
+
+    // Function to validate password input
+    const handlePassword = () => {
+
+        // password must contain at least one number
+        let numberCheck = /\d/;
+
+        //password must contain uppercase letter
+        let upperCaseCheck = /[A-Z]/;
+
+        //password must contain lowercase letter
+        let lowerCaseCheck = /[a-z]/;
+
+        //password must contain special character
+        let specialCharCheck = /[!@#$%^&*_]/;
+
+        // password must be at least 8 characters long
+        if (password.length < 8) {
+            setPasswordError('Password must be at least 8 characters long');
+        }
+
+        // password must contain at least one number
+        else if (numberCheck.test(password) === false) {
+            setPasswordError('Password must contain at least one number');
+        }
+
+        // password must contain at least one uppercase letter
+        else if (upperCaseCheck.test(password) === false) {
+            setPasswordError('Password must contain at least one uppercase letter');
+        }
+
+        // password must contain at least one lowercase letter
+        else if (lowerCaseCheck.test(password) === false) {
+            setPasswordError('Password must contain at least one lowercase letter');
+        }
+
+        // password must contain at least one special character
+        else if (specialCharCheck.test(password) === false) {
+            setPasswordError('Password must contain at least one special character');
+        }
+
+        // password is valid
+        else {
+            setPasswordError('');
+        }
+
+    };
+
+    const handlePhoneNumber = () => {
+        const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+        if (phonePattern.test(phoneNumber) === false) {
+            setPhoneTextColor('red');
+        }
+        else {
+            setPhoneTextColor('black');
+        }
+    }
+
+
+    // Function to handle registration
+    const handleRegister = () => {
+        handleFullName();
+        handlePhoneNumber();
+        handleEmail();
+        handlePassword();
+        handleTerms();
+    };
+
+
+    // Return the sign up form
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <Image
                     source={require('@/assets/images/1Point_Logo.png')}
@@ -57,10 +191,13 @@ export default function SignUp() {
             <Text style={styles.title}>Register</Text>
 
             <View style={styles.inputContainer}>
+
                 <View style={styles.inputWrapper}>
                     <FontAwesome style={styles.icon} name="user-circle-o" size={24} color="black" />
-                    <TextInput accessibilityLabel='name input' placeholder="Full Name" style={styles.input} />
+                    <TextInput accessibilityLabel='name input' placeholder="Full Name" style={styles.input} onChangeText={setFullName} />
                 </View>
+                {fullNameError !== '' && <Text style={{ color: 'red' }}>{fullNameError}</Text>}
+
 
                 <View style={styles.inputWrapper}>
 
@@ -72,23 +209,56 @@ export default function SignUp() {
                             placeholder: 'Phone Number',
                             value: phoneNumber,
                             onChangeText: handlePhoneNumberChange,
+                            placeholderTextColor: phoneTextColor,
                         }}
+                        textStyle={{ color: phoneTextColor }}
                     />
                 </View>
 
                 <View style={styles.inputWrapper}>
                     <MaterialCommunityIcons style={styles.icon} name="email" size={24} color="black" />
-                    <TextInput accessibilityLabel='email input' placeholder="Email" style={styles.input} />
+                    <TextInput accessibilityLabel='email input'
+                        placeholder="Email"
+                        style={styles.input}
+                        onChangeText={setEmail}
+                    />
                 </View>
+
+                {emailError !== '' && <Text style={{ color: 'red' }}>{emailError}</Text>}
 
                 <View style={styles.inputWrapper}>
                     <FontAwesome5 style={styles.icon} name="key" size={24} color="black" />
-                    <TextInput accessibilityLabel='password input' placeholder="Password" secureTextEntry={true} style={styles.input} />
+                    <TextInput accessibilityLabel='password input' placeholder="Password" secureTextEntry={true} style={styles.input} onChangeText={setPassword} />
+                </View>
+
+                {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
+
+                <View style={styles.inputWrapper}>
+                    <CheckBox
+                        accessibilityLabel='terms of service checkbox'
+                        value={isSelected}
+                        onValueChange={setSelection}
+                        style={styles.checkbox}
+                    />
+
+                    <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
+                        <Text style={{
+                            marginLeft: 8,
+                            textDecorationLine: 'underline',
+                            color: textColor
+                        }}>
+                            I agree to the terms of service.
+                        </Text>
+                    </TouchableOpacity>
 
                 </View>
             </View>
 
-            <TouchableOpacity accessibilityLabel='signup button' style={styles.signUpButton}>
+            <TouchableOpacity
+                accessibilityLabel='signup button'
+                style={styles.signUpButton}
+                onPress={handleRegister}
+            >
                 <Text style={styles.signUpButtonText}>Sign up</Text>
             </TouchableOpacity>
 
@@ -96,7 +266,7 @@ export default function SignUp() {
                 <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity
                     accessibilityLabel='login button'
-                    onPress={() => router.push("/home")}
+                    onPress={() => router.navigate('/home')}
                     style={styles.loginButton}>
                     <Text style={styles.loginButtonText}>Log in</Text>
                 </TouchableOpacity>
@@ -104,7 +274,7 @@ export default function SignUp() {
             </View>
 
             <Text style={styles.footer}>Copyright © 1Point 2024</Text>
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -117,7 +287,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 10,
     },
     headerImage: {
         width: 150,
@@ -132,6 +302,8 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     inputWrapper: {
         flexDirection: 'row',
@@ -140,6 +312,9 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         marginBottom: 10,
+        minHeight: 50,
+        minWidth: '95%',
+        margin: 5,
     },
     icon: {
         width: 24,
@@ -171,7 +346,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',
-        marginVertical: 20,
+        marginVertical: 10,
         width: '100%',
     },
     signUpButtonText: {
@@ -188,4 +363,15 @@ const styles = StyleSheet.create({
         bottom: 20,
         textAlign: 'center',
     },
+    checkboxContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+    checkbox: {
+        alignSelf: 'center',
+    },
+    tcText: {
+
+    },
+
 });
