@@ -228,7 +228,12 @@ export default function SignUp() {
 
                 <View style={styles.inputWrapper}>
                     <FontAwesome5 style={styles.icon} name="key" size={24} color="black" />
-                    <TextInput accessibilityLabel='password input' placeholder="Password" secureTextEntry={true} style={styles.input} onChangeText={setPassword} />
+                    <TextInput accessibilityLabel='password input'
+                        placeholder="Password"
+                        secureTextEntry={true}
+                        style={styles.input}
+                        onChangeText={setPassword}
+                    />
                 </View>
 
                 {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
