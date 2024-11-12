@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:21611082450:android:fb6ae7518a581a88c5f30b",
+        "mobilesdk_app_id": "1:21611082450:android:8a16f661133ead64c5f30b",
         "android_client_info": {
           "package_name": "ca.one_point.customer"
         }
@@ -28,7 +28,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBK7AhaZi3JvxoHKVjAUbv-1wmzcx9IqC4"
+          "current_key": "AIzaSyBRjNMJnjLGQyYyDTzerSO6RrGJH9yGAys"
         }
       ],
       "services": {

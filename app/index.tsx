@@ -7,6 +7,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import auth from '@react-native-firebase/auth'
+import { FirebaseError } from 'firebase/app'
 
 
 
@@ -177,6 +179,15 @@ export default function SignUp() {
         handleTerms();
     };
 
+    const testSignIn = async () => {
+        try {
+            await auth().createUserWithEmailAndPassword("thev@gmail.com", "123123")
+        } catch (e: any) {
+            const err = e as FirebaseError;
+            alert('Sign in failed: ' + err.message)
+        }
+    }
+
 
     // Return the sign up form
     return (
@@ -246,7 +257,7 @@ export default function SignUp() {
                         style={styles.checkbox}
                     />
 
-                    <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
+                    <TouchableOpacity onPress={testSignIn}>
                         <Text style={{
                             marginLeft: 8,
                             textDecorationLine: 'underline',
@@ -262,7 +273,7 @@ export default function SignUp() {
             <TouchableOpacity
                 accessibilityLabel='signup button'
                 style={styles.signUpButton}
-                onPress={handleRegister}
+                onPress={testSignIn}
             >
                 <Text style={styles.signUpButtonText}>Sign up</Text>
             </TouchableOpacity>
@@ -271,7 +282,7 @@ export default function SignUp() {
                 <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity
                     accessibilityLabel='login button'
-                    onPress={() => router.navigate('/home')}
+                    onPress={() => testSignIn}//router.navigate('/home')}
                     style={styles.loginButton}>
                     <Text style={styles.loginButtonText}>Log in</Text>
                 </TouchableOpacity>
