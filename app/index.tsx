@@ -282,7 +282,7 @@ export default function SignUp() {
                 <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity
                     accessibilityLabel='login button'
-                    onPress={() => testSignIn}//router.navigate('/home')}
+                    onPress={() => router.navigate('/home')}
                     style={styles.loginButton}>
                     <Text style={styles.loginButtonText}>Log in</Text>
                 </TouchableOpacity>
