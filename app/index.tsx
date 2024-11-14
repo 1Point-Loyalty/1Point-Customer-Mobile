@@ -178,9 +178,15 @@ export default function SignUp() {
     handleTerms();
   };
 
-  const testSignIn = async () => {
+  const signUp = async () => {
+    if (!email || !password) {
+        alert("Email and password must not be empty.");
+        return;
+    }
+
     try {
-      await auth().createUserWithEmailAndPassword(email, password);
+        await auth().createUserWithEmailAndPassword(email, password);
+        router.navigate("/home")
     } catch (e: any) {
       const err = e as FirebaseError;
       alert("Sign in failed: " + err.message);
@@ -280,7 +286,7 @@ export default function SignUp() {
             style={styles.checkbox}
           />
 
-          <TouchableOpacity onPress={testSignIn}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
             <Text
               style={{
                 marginLeft: 8,
@@ -297,7 +303,7 @@ export default function SignUp() {
       <TouchableOpacity
         accessibilityLabel="signup button"
         style={styles.signUpButton}
-        onPress={testSignIn}
+        onPress={signUp}
       >
         <Text style={styles.signUpButtonText}>Sign up</Text>
       </TouchableOpacity>
