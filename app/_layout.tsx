@@ -19,6 +19,7 @@ export default function RootLayout() {
   const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
     console.log('onauthStateChanged', user)
     setUser(user);
+    if (initializing) setInitializing(false);
   }
 
   useEffect(() => {
