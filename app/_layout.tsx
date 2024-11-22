@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
@@ -12,6 +12,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [initializing, setInitializing] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
   const router = useRouter();
   const segments = useSegments();
@@ -35,7 +36,7 @@ export default function RootLayout() {
     } else if (!user && inAuthGroup) {
       router.replace('/');
     }
-  }, [user, initializing]);
+  }, [user, initializing, segments]);
   
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -54,10 +55,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {user ? (<Redirect href="/(auth)" />):(
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
-      </Stack>
+      </Stack>)}
     </ThemeProvider>
   );
 }
