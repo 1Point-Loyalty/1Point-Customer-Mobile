@@ -40,8 +40,6 @@ export default function SignUp() {
   const [textColor, setTextColor] = useState("black");
   const [phoneTextColor, setPhoneTextColor] = useState("black");
 
-  const [loading, setLoading] = useState(false);
-
   navigation.setOptions({ headerShown: false });
 
   // List of countries for phone number (Canada only)
@@ -181,7 +179,6 @@ export default function SignUp() {
   };
 
   const signUp = async () => {
-    setLoading(true)
     if (!email || !password) {
         alert("Email and password must not be empty.");
         return;
@@ -193,136 +190,135 @@ export default function SignUp() {
       const err = e as FirebaseError;
       alert("Sign in failed: " + err.message);
     }
-    setLoading(false)
   };
 
   // Return the sign up form
   return (
     <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Image
-                source={require("@/assets/images/1Point_Logo.png")}
-                style={styles.headerImage}
-                />
-            </View>
+      <View style={styles.header}>
+        <Image
+          source={require("@/assets/images/1Point_Logo.png")}
+          style={styles.headerImage}
+        />
+      </View>
 
-            <Text style={styles.title}>Register</Text>
+      <Text style={styles.title}>Register</Text>
 
-            <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                <FontAwesome
-                    style={styles.icon}
-                    name="user-circle-o"
-                    size={24}
-                    color="black"
-                />
-                <TextInput
-                    accessibilityLabel="name input"
-                    placeholder="Full Name"
-                    style={styles.input}
-                    onChangeText={setFullName}
-                />
-                </View>
-                {fullNameError !== "" && (
-                <Text style={{ color: "red" }}>{fullNameError}</Text>
-                )}
+      <View style={styles.inputContainer}>
+        <View style={styles.inputWrapper}>
+          <FontAwesome
+            style={styles.icon}
+            name="user-circle-o"
+            size={24}
+            color="black"
+          />
+          <TextInput
+            accessibilityLabel="name input"
+            placeholder="Full Name"
+            style={styles.input}
+            onChangeText={setFullName}
+          />
+        </View>
+        {fullNameError !== "" && (
+          <Text style={{ color: "red" }}>{fullNameError}</Text>
+        )}
 
-                <View style={styles.inputWrapper}>
-                <PhoneInput
-                    style={styles.input}
-                    initialCountry="ca"
-                    countriesList={countriesList}
-                    textProps={{
-                    placeholder: "Phone Number",
-                    value: phoneNumber,
-                    onChangeText: handlePhoneNumberChange,
-                    placeholderTextColor: phoneTextColor,
-                    }}
-                    textStyle={{ color: phoneTextColor }}
-                />
-                </View>
+        <View style={styles.inputWrapper}>
+          <PhoneInput
+            style={styles.input}
+            initialCountry="ca"
+            countriesList={countriesList}
+            textProps={{
+              placeholder: "Phone Number",
+              value: phoneNumber,
+              onChangeText: handlePhoneNumberChange,
+              placeholderTextColor: phoneTextColor,
+            }}
+            textStyle={{ color: phoneTextColor }}
+          />
+        </View>
 
-                <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons
-                    style={styles.icon}
-                    name="email"
-                    size={24}
-                    color="black"
-                />
-                <TextInput
-                    accessibilityLabel="email input"
-                    placeholder="Email"
-                    style={styles.input}
-                    onChangeText={setEmail}
-                />
-                </View>
+        <View style={styles.inputWrapper}>
+          <MaterialCommunityIcons
+            style={styles.icon}
+            name="email"
+            size={24}
+            color="black"
+          />
+          <TextInput
+            accessibilityLabel="email input"
+            placeholder="Email"
+            style={styles.input}
+            onChangeText={setEmail}
+          />
+        </View>
 
-                {emailError !== "" && (
-                <Text style={{ color: "red" }}>{emailError}</Text>
-                )}
+        {emailError !== "" && (
+          <Text style={{ color: "red" }}>{emailError}</Text>
+        )}
 
-                <View style={styles.inputWrapper}>
-                <FontAwesome5
-                    style={styles.icon}
-                    name="key"
-                    size={24}
-                    color="black"
-                />
-                <TextInput
-                    accessibilityLabel="password input"
-                    placeholder="Password"
-                    secureTextEntry={true}
-                    style={styles.input}
-                    onChangeText={setPassword}
-                />
-                </View>
+        <View style={styles.inputWrapper}>
+          <FontAwesome5
+            style={styles.icon}
+            name="key"
+            size={24}
+            color="black"
+          />
+          <TextInput
+            accessibilityLabel="password input"
+            placeholder="Password"
+            secureTextEntry={true}
+            style={styles.input}
+            onChangeText={setPassword}
+          />
+        </View>
 
-                {passwordError !== "" && (
-                <Text style={{ color: "red" }}>{passwordError}</Text>
-                )}
+        {passwordError !== "" && (
+          <Text style={{ color: "red" }}>{passwordError}</Text>
+        )}
 
-                <View style={styles.inputWrapper}>
-                <CheckBox
-                    accessibilityLabel="terms of service checkbox"
-                    value={isSelected}
-                    onValueChange={setSelection}
-                    style={styles.checkbox}
-                />
+        <View style={styles.inputWrapper}>
+          <CheckBox
+            accessibilityLabel="terms of service checkbox"
+            value={isSelected}
+            onValueChange={setSelection}
+            style={styles.checkbox}
+          />
 
-                <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
-                    <Text
-                    style={{
-                        marginLeft: 8,
-                        textDecorationLine: "underline",
-                        color: textColor,
-                    }}
-                    >
-                    I agree to the terms of service.
-                    </Text>
-                </TouchableOpacity>
-                </View>
-            </View>
-
-            <TouchableOpacity
-                accessibilityLabel="signup button"
-                style={styles.signUpButton}
-                onPress={signUp}
+          <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
+            <Text
+              style={{
+                marginLeft: 8,
+                textDecorationLine: "underline",
+                color: textColor,
+              }}
             >
-                <Text style={styles.signUpButtonText}>Sign up</Text>
-            </TouchableOpacity>
+              I agree to the terms of service.
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-            <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Already have an account?</Text>
-                <TouchableOpacity
-                accessibilityLabel="login button"
-                onPress={() => router.navigate("/home")}
-                style={styles.loginButton}
-                >
-                <Text style={styles.loginButtonText}>Log in</Text>
-                </TouchableOpacity>
-            </View>
+      <TouchableOpacity
+        accessibilityLabel="signup button"
+        style={styles.signUpButton}
+        onPress={signUp}
+      >
+        <Text style={styles.signUpButtonText}>Sign up</Text>
+      </TouchableOpacity>
 
-            <Text style={styles.footer}>Copyright © 1Point 2024</Text>
+      <View style={styles.loginContainer}>
+        <Text style={styles.loginText}>Already have an account?</Text>
+        <TouchableOpacity
+          accessibilityLabel="login button"
+          onPress={() => router.navigate("/home")}
+          style={styles.loginButton}
+        >
+          <Text style={styles.loginButtonText}>Log in</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.footer}>Copyright © 1Point 2024</Text>
     </SafeAreaView>
   );
 }
