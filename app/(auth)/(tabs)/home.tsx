@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Image, SafeAreaView, Button } from 'react-native';
 import PagerView from 'react-native-pager-view';
+import auth from '@react-native-firebase/auth';
 
 export default function HomeScreen() {
 
@@ -153,6 +154,9 @@ export default function HomeScreen() {
           />
           <View style={styles.headerText}>
             <Text style={styles.welcomeText}>Welcome John!</Text>
+          </View>
+          <View style={styles.headerText}>
+            <Button title="Sign out" onPress={()=>auth().signOut()}></Button>
           </View>
         </View>
 
