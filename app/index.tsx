@@ -29,102 +29,13 @@ export default function SignUp() {
 
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
 
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-
-  const [isSelected, setSelection] = useState(false);
-
-  const [textColor, setTextColor] = useState("black");
-  const [phoneTextColor, setPhoneTextColor] = useState("black");
-
-  navigation.setOptions({ headerShown: false });
-
-  // List of countries for phone number (Canada only)
-  const countriesList = [
-    {
-      name: "Canada",
-      iso2: "ca",
-      dialCode: "1",
-      priority: 0,
-      areaCodes: null,
-    },
-  ];
-
-  // Function to validate full name input
-  const handleFullName = () => {
-    const splitName = fullName.split(" ");
-
-    if (
-      splitName.length !== 2 ||
-      splitName[0].length < 2 ||
-      splitName[1].length < 2
-    ) {
-      setFullNameError("Please enter a valid first and last name");
-    } else {
-      setFullNameError("");
-    }
-  };
-
-  // Function to format phone number input
-  const formatPhoneNumber = (number: string) => {
-    // Remove all non-digit characters
-    const cleaned = ("" + number).replace(/\D/g, "");
-    // Limit to 10 digits
-    const limited = cleaned.substring(0, 10);
-    // Format the number with hyphens
-    const match = limited.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return `${match[1]}-${match[2]}-${match[3]}`;
-    }
-    return limited;
-  };
-
-  // Function to validate phone number input
-  const handlePhoneNumberChange = (number: string) => {
-    const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
-    setPhoneNumber(number);
-    const formattedNumber = formatPhoneNumber(number);
-    setPhoneNumber(formattedNumber);
-    if (phonePattern.test(formattedNumber) === false) {
-      setPhoneTextColor("red");
-    } else {
-      setPhoneTextColor("black");
-    }
-  };
-
-  // Function to validate email input
-  const handleEmail = () => {
-    // format for email: characters@characters.characters
-    let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
-    if (emailFormat.test(email) === false) {
-      setEmailError("Please enter a valid email address");
-    } else {
-      setEmailError("");
-    }
-  };
-
-  // Function to validate terms of service checkbox
-  const handleTerms = () => {
-    if (isSelected === false) {
-      setTextColor("red");
-    } else {
-      setTextColor("black");
-    }
-  };
 
   // Function to validate password input
   const handlePassword = () => {
     // password must contain at least one number
     let numberCheck = /\d/;
 
-    //password must contain uppercase letter
-    let upperCaseCheck = /[A-Z]/;
-
-    //password must contain lowercase letter
-    let lowerCaseCheck = /[a-z]/;
 
     //password must contain special character
     let specialCharCheck = /[!@#$%^&*_]/;
@@ -132,12 +43,7 @@ export default function SignUp() {
     // password must be at least 8 characters long
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters long");
-    }
 
-    // password must contain at least one number
-    else if (numberCheck.test(password) === false) {
-      setPasswordError("Password must contain at least one number");
-    }
 
     // password must contain at least one uppercase letter
     else if (upperCaseCheck.test(password) === false) {
