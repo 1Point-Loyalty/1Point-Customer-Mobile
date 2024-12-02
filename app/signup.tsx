@@ -9,21 +9,23 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 
-
-
-
-
-export default function LogIn() {
+export default function SignUp() {
     const router = useRouter();
     const navigation = useNavigation();
 
     // State variables for form inputs
+    const [fullName, setFullName] = useState('');
+    const [fullNameError, setFullNameError] = useState('');
+
+    const [phoneNumber, setPhoneNumber] = useState('');
 
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
 
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    const [isSelected, setSelection] = useState(false);
 
     const [textColor, setTextColor] = useState('black');
     const [phoneTextColor, setPhoneTextColor] = useState('black');
@@ -42,10 +44,46 @@ export default function LogIn() {
     ];
 
 
+    // Function to validate full name input
+    const handleFullName = () => {
+        const splitName = fullName.split(' ');
 
+        if (splitName.length !== 2 || splitName[0].length < 2 || splitName[1].length < 2) {
+            setFullNameError('Please enter a valid first and last name');
+        }
+        else {
+            setFullNameError('');
+        }
+    };
 
+    // Function to format phone number input
+    const formatPhoneNumber = (number: string) => {
+        // Remove all non-digit characters
+        const cleaned = ('' + number).replace(/\D/g, '');
+        // Limit to 10 digits
+        const limited = cleaned.substring(0, 10);
+        // Format the number with hyphens
+        const match = limited.match(/^(\d{3})(\d{3})(\d{4})$/);
+        if (match) {
+            return `${match[1]}-${match[2]}-${match[3]}`;
+        }
+        return limited;
+    };
 
+    // Function to validate phone number input 
+    const handlePhoneNumberChange = (number: string) => {
 
+        const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+        setPhoneNumber(number);
+        const formattedNumber = formatPhoneNumber(number);
+        setPhoneNumber(formattedNumber);
+        if (phonePattern.test(formattedNumber) === false) {
+            setPhoneTextColor('red');
+        }
+        else {
+            setPhoneTextColor('black');
+        }
+    };
 
     // Function to validate email input
     const handleEmail = () => {
@@ -59,6 +97,15 @@ export default function LogIn() {
         }
     };
 
+    // Function to validate terms of service checkbox
+    const handleTerms = () => {
+        if (isSelected === false) {
+            setTextColor('red');
+        }
+        else {
+            setTextColor('black');
+        }
+    };
 
 
     // Function to validate password input
@@ -78,7 +125,7 @@ export default function LogIn() {
 
         // password must be at least 8 characters long
         if (password.length < 8) {
-            setPasswordError('Incorrect Password');
+            setPasswordError('Password must be at least 8 characters long');
         }
 
         // password must contain at least one number
@@ -108,14 +155,24 @@ export default function LogIn() {
 
     };
 
-
+    const handlePhoneNumber = () => {
+        const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+        if (phonePattern.test(phoneNumber) === false) {
+            setPhoneTextColor('red');
+        }
+        else {
+            setPhoneTextColor('black');
+        }
+    }
 
 
     // Function to handle registration
-    const handleLogin = () => {
+    const handleRegister = () => {
+        handleFullName();
+        handlePhoneNumber();
         handleEmail();
         handlePassword();
-  
+        handleTerms();
     };
 
 
@@ -129,9 +186,32 @@ export default function LogIn() {
                 />
             </View>
 
-            <Text style={styles.title}>Log In</Text>
+            <Text style={styles.title}>Register</Text>
 
             <View style={styles.inputContainer}>
+
+                <View style={styles.inputWrapper}>
+                    <FontAwesome style={styles.icon} name="user-circle-o" size={24} color="black" />
+                    <TextInput accessibilityLabel='name input' placeholder="Full Name" style={styles.input} onChangeText={setFullName} />
+                </View>
+                {fullNameError !== '' && <Text style={{ color: 'red' }}>{fullNameError}</Text>}
+
+
+                <View style={styles.inputWrapper}>
+
+                    <PhoneInput
+                        style={styles.input}
+                        initialCountry="ca"
+                        countriesList={countriesList}
+                        textProps={{
+                            placeholder: 'Phone Number',
+                            value: phoneNumber,
+                            onChangeText: handlePhoneNumberChange,
+                            placeholderTextColor: phoneTextColor,
+                        }}
+                        textStyle={{ color: phoneTextColor }}
+                    />
+                </View>
 
                 <View style={styles.inputWrapper}>
                     <MaterialCommunityIcons style={styles.icon} name="email" size={24} color="black" />
@@ -156,29 +236,42 @@ export default function LogIn() {
 
                 {passwordError !== '' && <Text style={{ color: 'red' }}>{passwordError}</Text>}
 
+                <View style={styles.inputWrapper}>
+                    <CheckBox
+                        accessibilityLabel='terms of service checkbox'
+                        value={isSelected}
+                        onValueChange={setSelection}
+                        style={styles.checkbox}
+                    />
+
+                    <TouchableOpacity onPress={() => Linking.openURL('https://1-point.ca/page/tc')}>
+                        <Text style={{
+                            marginLeft: 8,
+                            textDecorationLine: 'underline',
+                            color: textColor
+                        }}>
+                            I agree to the terms of service.
+                        </Text>
+                    </TouchableOpacity>
+
+                </View>
             </View>
-            <TouchableOpacity
-                accessibilityLabel = 'forgot password'
-                style={styles.forgotPasswordText}
-                onPress={() => router.navigate('/signup')}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
 
             <TouchableOpacity
                 accessibilityLabel='signup button'
                 style={styles.signUpButton}
-                onPress={handleLogin}
+                onPress={handleRegister}
             >
-                <Text style={styles.signUpButtonText}>Log In</Text>
+                <Text style={styles.signUpButtonText}>Sign up</Text>
             </TouchableOpacity>
 
             <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Don't have an account?</Text>
+                <Text style={styles.loginText}>Already have an account?</Text>
                 <TouchableOpacity
-                    accessibilityLabel='register button'
-                    onPress={() => router.navigate('/signup')}
+                    accessibilityLabel='login button'
+                    onPress={() => router.navigate('/')}
                     style={styles.loginButton}>
-                    <Text style={styles.loginButtonText}>Register</Text>
+                    <Text style={styles.loginButtonText}>Log in</Text>
                 </TouchableOpacity>
 
             </View>
@@ -238,12 +331,6 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginTop: 20,
     },
-    forgotPasswordText: {
-        marginBottom: 10,
-        textAlign:'right',
-        width: '100%',
-        color: 'blue'
-    },    
     loginButton: {
         borderWidth: 1,
         borderColor: 'black',
