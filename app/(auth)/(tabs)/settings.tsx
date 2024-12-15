@@ -4,6 +4,10 @@ import PagerView from 'react-native-pager-view';
 import auth from '@react-native-firebase/auth';
 import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import PhoneInput from "react-native-phone-input";
+
+
 
 
 
@@ -40,10 +44,12 @@ export default function Settings() {
 
         <View style={styles.row}>
           <View style={styles.pointContainer}>
-            <Image
-              source={require('@/assets/images/1Point_User.png')}
-              style={styles.pointAmounts}
-            />
+          <MaterialCommunityIcons
+              style={styles.icon}
+              name="account"
+              size={24}
+              color="black"
+          />
           </View>
           <TextInput accessibilityLabel = "name"
           placeholder = "John Doe"
@@ -53,10 +59,12 @@ export default function Settings() {
 
         <View style={styles.row}>
           <View style={styles.pointContainer}>
-            <Image
-              source={require('@/assets/images/1Point_Email.png')}
-              style={styles.pointAmounts}
-            />
+          <MaterialCommunityIcons
+              style={styles.icon}
+              name="email"
+              size={24}
+              color="black"
+          />
           </View>
           <TextInput accessibilityLabel = "email"
           placeholder = "john.doe@gmail.com"
@@ -66,15 +74,17 @@ export default function Settings() {
 
         <View style={styles.row}>
           <View style={styles.pointContainer}>
-            <Image
-              source={require('@/assets/images/1Point_Number.png')}
-              style={styles.pointAmounts}
-            />
+          <MaterialCommunityIcons
+              style={styles.icon}
+              name="phone"
+              size={24}
+              color="black"
+          />
           </View>
-          <TextInput accessibilityLabel = "phone number"
-          placeholder = "437-333-9999"
-          style={styles.input}>            
-          </TextInput>
+          <PhoneInput
+            style={styles.input}
+            initialCountry="ca"
+          />
         </View>
 
         <TouchableOpacity 
@@ -159,6 +169,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontWeight: 'bold',
     flexShrink: 1,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
   },
   settingsPanel: {
     backgroundColor: '#f5f5f5',
