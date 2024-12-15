@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, SafeAreaView, Button, TextInput, TouchableOpacity } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -23,16 +23,7 @@ export default function TabTwoScreen() {
             <Text style={styles.welcomeText}>Transaction History</Text>
           </View>
         </View>
-
-        {renderPages()}
-        {renderPageDots()}
-
       </View>
-
-      <View style={styles.lower}>
-        {renderPointsSection()}
-      </View>
-
     </SafeAreaView >
   );
 };
