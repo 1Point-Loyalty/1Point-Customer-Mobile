@@ -16,7 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import auth from "@react-native-firebase/auth";
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { FirebaseError } from "firebase/app";
 
 export default function SignUp() {
@@ -183,12 +183,60 @@ export default function SignUp() {
       alert("Email and password must not be empty.");
       return;
     }
+    handleRegister()
+    if (emailError != ""|| fullNameError != ""|| passwordError != "") {
+      alert("Failed Validations")
+      return
+    }
 
     try {
       await auth().createUserWithEmailAndPassword(email, password);
     } catch (e: any) {
       const err = e as FirebaseError;
-      alert("Sign in failed: " + err.message);
+      alert("Sign up failed: " + err.message);
+    }
+    try {
+      await handleCreateUser()
+    } catch (e: any) {
+      const err = e as FirebaseError;
+      alert("Sign up failed: " + err.message);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    const user = auth().currentUser;
+    const userId = user?.uid;
+    const token = await user?.getIdToken(); // Retrieve the token from storage
+
+    if (!token) {
+      alert("Error, No authentication token found");
+      return;
+    };
+    
+    var first = fullName.split(" ")[0]
+    var last = fullName.split(" ")[1]
+  
+    const response = await fetch(`https://admin.1-point.ca/api/createUser/${userId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        "firstName": first,
+        "lastName": last,
+        "email": email,
+        "phoneNumber": phoneNumber,
+        "isBO": 0,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      alert("Success, User created successfully");
+    } else {
+      const error = await response.text();
+      alert(error);
     }
   };
 
