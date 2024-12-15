@@ -87,6 +87,7 @@ export default function SignUp() {
     }
 
     // Full Name Validations
+    var validFullname = false
     const splitName = fullName.split(" ");
     if (
       splitName.length !== 2 ||
@@ -96,6 +97,7 @@ export default function SignUp() {
       setFullNameError("Please enter a valid first and last name");
     } else {
       setFullNameError("");
+      validFullname = true
     }
 
     // Phone Number Validations
@@ -107,15 +109,18 @@ export default function SignUp() {
     }
 
     // Email Regex Validations
+    var validEmail = false;
     // format for email: characters@characters.characters
     let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (emailFormat.test(email) === false) {
       setEmailError("Please enter a valid email address");
     } else {
       setEmailError("");
+      validEmail = true
     }
 
     // Password Validations
+    var validPassword = false
     // password must contain at least one number
     let numberCheck = /\d/;
     //password must contain uppercase letter
@@ -144,6 +149,7 @@ export default function SignUp() {
     else if (specialCharCheck.test(password) === false) {
       setPasswordError("Password must contain at least one special character");
     } else {
+      validPassword = true
       setPasswordError("");
     }
 
@@ -154,7 +160,7 @@ export default function SignUp() {
       setTextColor("black");
     }
 
-    if (emailError != ""|| fullNameError != ""|| passwordError != "") {
+    if (validEmail != true|| validFullname != true|| validPassword != true) {
       alert("Failed Validations")
       return
     }
