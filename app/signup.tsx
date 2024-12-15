@@ -53,21 +53,6 @@ export default function SignUp() {
     },
   ];
 
-  // Function to validate full name input
-  const handleFullName = () => {
-    const splitName = fullName.split(" ");
-
-    if (
-      splitName.length !== 2 ||
-      splitName[0].length < 2 ||
-      splitName[1].length < 2
-    ) {
-      setFullNameError("Please enter a valid first and last name");
-    } else {
-      setFullNameError("");
-    }
-  };
-
   // Function to format phone number input
   const formatPhoneNumber = (number: string) => {
     // Remove all non-digit characters
@@ -95,8 +80,33 @@ export default function SignUp() {
     }
   };
 
-  // Function to validate email input
-  const handleEmail = () => {
+  const signUp = async () => {
+    if (!email || !password) {
+      alert("Email and password must not be empty.");
+      return;
+    }
+
+    // Full Name Validations
+    const splitName = fullName.split(" ");
+    if (
+      splitName.length !== 2 ||
+      splitName[0].length < 2 ||
+      splitName[1].length < 2
+    ) {
+      setFullNameError("Please enter a valid first and last name");
+    } else {
+      setFullNameError("");
+    }
+
+    // Phone Number Validations
+    const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+    if (phonePattern.test(phoneNumber) === false) {
+      setPhoneTextColor("red");
+    } else {
+      setPhoneTextColor("black");
+    }
+
+    // Email Regex Validations
     // format for email: characters@characters.characters
     let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (emailFormat.test(email) === false) {
@@ -104,86 +114,46 @@ export default function SignUp() {
     } else {
       setEmailError("");
     }
-  };
 
-  // Function to validate terms of service checkbox
-  const handleTerms = () => {
+    // Password Validations
+    // password must contain at least one number
+    let numberCheck = /\d/;
+    //password must contain uppercase letter
+    let upperCaseCheck = /[A-Z]/;
+    //password must contain lowercase letter
+    let lowerCaseCheck = /[a-z]/;
+    //password must contain special character
+    let specialCharCheck = /[!@#$%^&*_]/;
+    // password must be at least 8 characters long
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+    }
+    // password must contain at least one number
+    else if (numberCheck.test(password) === false) {
+      setPasswordError("Password must contain at least one number");
+    }
+    // password must contain at least one uppercase letter
+    else if (upperCaseCheck.test(password) === false) {
+      setPasswordError("Password must contain at least one uppercase letter");
+    }
+    // password must contain at least one lowercase letter
+    else if (lowerCaseCheck.test(password) === false) {
+      setPasswordError("Password must contain at least one lowercase letter");
+    }
+    // password must contain at least one special character
+    else if (specialCharCheck.test(password) === false) {
+      setPasswordError("Password must contain at least one special character");
+    } else {
+      setPasswordError("");
+    }
+
+    // Accepted Terms Validation
     if (isSelected === false) {
       setTextColor("red");
     } else {
       setTextColor("black");
     }
-  };
 
-  // Function to validate password input
-  const handlePassword = () => {
-    // password must contain at least one number
-    let numberCheck = /\d/;
-
-    //password must contain uppercase letter
-    let upperCaseCheck = /[A-Z]/;
-
-    //password must contain lowercase letter
-    let lowerCaseCheck = /[a-z]/;
-
-    //password must contain special character
-    let specialCharCheck = /[!@#$%^&*_]/;
-
-    // password must be at least 8 characters long
-    if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
-    }
-
-    // password must contain at least one number
-    else if (numberCheck.test(password) === false) {
-      setPasswordError("Password must contain at least one number");
-    }
-
-    // password must contain at least one uppercase letter
-    else if (upperCaseCheck.test(password) === false) {
-      setPasswordError("Password must contain at least one uppercase letter");
-    }
-
-    // password must contain at least one lowercase letter
-    else if (lowerCaseCheck.test(password) === false) {
-      setPasswordError("Password must contain at least one lowercase letter");
-    }
-
-    // password must contain at least one special character
-    else if (specialCharCheck.test(password) === false) {
-      setPasswordError("Password must contain at least one special character");
-    }
-
-    // password is valid
-    else {
-      setPasswordError("");
-    }
-  };
-
-  const handlePhoneNumber = () => {
-    const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
-    if (phonePattern.test(phoneNumber) === false) {
-      setPhoneTextColor("red");
-    } else {
-      setPhoneTextColor("black");
-    }
-  };
-
-  // Function to handle registration
-  const handleRegister = () => {
-    handleFullName();
-    handlePhoneNumber();
-    handleEmail();
-    handlePassword();
-    handleTerms();
-  };
-
-  const signUp = async () => {
-    if (!email || !password) {
-      alert("Email and password must not be empty.");
-      return;
-    }
-    handleRegister()
     if (emailError != ""|| fullNameError != ""|| passwordError != "") {
       alert("Failed Validations")
       return
@@ -194,12 +164,14 @@ export default function SignUp() {
     } catch (e: any) {
       const err = e as FirebaseError;
       alert("Sign up failed: " + err.message);
+      return
     }
     try {
       await handleCreateUser()
     } catch (e: any) {
       const err = e as FirebaseError;
       alert("Sign up failed: " + err.message);
+      return
     }
   };
 
@@ -212,7 +184,7 @@ export default function SignUp() {
       alert("Error, No authentication token found");
       return;
     };
-    
+
     var first = fullName.split(" ")[0]
     var last = fullName.split(" ")[1]
   
