@@ -73,14 +73,6 @@ export default function Settings() {
         </View>
 
         <View style={styles.row}>
-          <View style={styles.pointContainer}>
-          <MaterialCommunityIcons
-              style={styles.icon}
-              name="phone"
-              size={24}
-              color="black"
-          />
-          </View>
           <PhoneInput
             style={styles.input}
             initialCountry="ca"
