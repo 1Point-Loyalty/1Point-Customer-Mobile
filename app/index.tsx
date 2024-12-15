@@ -162,15 +162,15 @@ export default function LogIn() {
       <TouchableOpacity
         accessibilityLabel="forgot password"
         style={styles.forgotPasswordText}
-        onPress={() => router.navigate("/signup")}
+        onPress={() => router.navigate("/forgot_password")}
       >
         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        accessibilityLabel="signup button"
+        accessibilityLabel="log in button"
         style={styles.signUpButton}
-        onPress={handleLogin}
+        onPress={() => router.navigate("/home")}
       >
         <Text style={styles.signUpButtonText}>Log In</Text>
       </TouchableOpacity>
