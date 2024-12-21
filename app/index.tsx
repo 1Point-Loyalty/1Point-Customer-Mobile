@@ -16,6 +16,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import { FirebaseError } from "firebase/app";
 
 export default function LogIn() {
   const router = useRouter();
@@ -102,9 +104,64 @@ export default function LogIn() {
   };
 
   // Function to handle registration
-  const handleLogin = () => {
-    handleEmail();
-    handlePassword();
+  const handleLogin = async () => {
+    // format for email: characters@characters.characters
+    var emailError = ""
+    let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+    if (emailFormat.test(email) === false) {
+      emailError = ("Please enter a valid email address");
+    }
+    
+    var passwordError = ""
+    // password must contain at least one number
+    let numberCheck = /\d/;
+
+    //password must contain uppercase letter
+    let upperCaseCheck = /[A-Z]/;
+
+    //password must contain lowercase letter
+    let lowerCaseCheck = /[a-z]/;
+
+    //password must contain special character
+    let specialCharCheck = /[!@#$%^&*_]/;
+
+    // password must be at least 8 characters long
+    if (password.length < 8) {
+      passwordError = ("Password must be at least 8 characters long");
+    }
+
+    // password must contain at least one number
+    else if (numberCheck.test(password) === false) {
+      passwordError = ("Password must contain at least one number");
+    }
+
+    // password must contain at least one uppercase letter
+    else if (upperCaseCheck.test(password) === false) {
+      passwordError = ("Password must contain at least one uppercase letter");
+    }
+
+    // password must contain at least one lowercase letter
+    else if (lowerCaseCheck.test(password) === false) {
+      passwordError = ("Password must contain at least one lowercase letter");
+    }
+
+    // password must contain at least one special character
+    else if (specialCharCheck.test(password) === false) {
+      passwordError = ("Password must contain at least one special character");
+    }
+
+    if (emailError != ""|| passwordError != "") {
+      alert(`Failed Validations: \n ${emailError} \n ${passwordError}`)
+      return
+    }
+    try {
+      await auth().signInWithEmailAndPassword(email, password)
+    } catch (e: any) {
+      const err = e as FirebaseError;
+      alert("Sign up failed - please check if entered email and password are correct");
+      console.log(err.message)
+      return
+    }
   };
 
   // Return the sign up form
