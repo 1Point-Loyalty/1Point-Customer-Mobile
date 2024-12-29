@@ -181,7 +181,7 @@ export default function TabTwoScreen() {
             <Text style={styles.transactionText}>
               {userData.mostRecentTransaction
                 ? userData.mostRecentTransaction
-                : "No transactions yet"}
+                : "N/A"}
             </Text>
           </View>
 
