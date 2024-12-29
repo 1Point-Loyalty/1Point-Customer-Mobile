@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,20 +9,56 @@ import {
 } from "react-native";
 import auth from "@react-native-firebase/auth";
 import QRCode from "react-native-qrcode-svg";
+import moment from "moment";
 
 export default function TabTwoScreen() {
-  const userData = {
-    firstName: "Saif",
-    lastName: "Abuosba",
-    phoneNumber: "555-555-5555",
-  };
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    createdAt: "",
+    currentPoints: 0,
+    totalPoints: 0,
+    mostRecentTransaction: "",
+  });
 
   const [encryptedQRCode, setEncryptedQRCode] = useState("INVALID");
-  const fetchData = async () => {
+
+  // call fetchData every 5 minutes
+  const fetchData = useCallback(async () => {
     const user = auth().currentUser;
     const userId = user?.uid;
 
     const token = await user?.getIdToken();
+
+    fetch(`https://admin.1-point.ca/api/getUser/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // format dates
+        const formattedData = {
+          ...data[0],
+          createdAt: moment(data[0].createdAt).format("MM/YY"),
+          // format the most recent transaction date
+          mostRecentTransaction: data[0].mostRecentTransaction
+            ? moment(data[0].mostRecentTransaction).format("YYYY/MM/DD")
+            : null,
+        };
+        setUserData(formattedData);
+      })
+      .catch((error) => {
+        alert(`Error: ${error.message}`);
+        console.error(error);
+      });
 
     fetch(`https://admin.1-point.ca/api/getEncryptedUserDetails/${userId}`, {
       method: "GET",
@@ -39,16 +75,19 @@ export default function TabTwoScreen() {
       })
       .then((data) => {
         setEncryptedQRCode(data);
-        alert(`Response: ${JSON.stringify(data)}`);
       })
       .catch((error) => {
-        alert(`Error: ${error.message}`);
+        alert(`Error: Failed to create QR code:`);
+        console.error(error);
       });
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    const autoRefresh = setInterval(fetchData, 60000);
+
+    return () => clearInterval(autoRefresh);
+  }, [fetchData]);
 
   // Render the qr page
   return (
@@ -103,7 +142,7 @@ export default function TabTwoScreen() {
                 fontWeight: "bold",
               }}
             >
-              MEMBER SINCE: 11/24
+              MEMBER SINCE: {userData.createdAt}
             </Text>
           </View>
         </View>
@@ -119,7 +158,7 @@ export default function TabTwoScreen() {
                 source={require("@/assets/images/1Point_Logo.png")}
                 style={styles.pointAmounts}
               />
-              <Text style={styles.pointText}>1,978</Text>
+              <Text style={styles.pointText}>{userData.currentPoints}</Text>
             </View>
           </View>
 
@@ -131,21 +170,23 @@ export default function TabTwoScreen() {
                 source={require("@/assets/images/1Point_Logo.png")}
                 style={styles.pointAmounts}
               />
-              <Text style={styles.pointText}>34,909</Text>
+              <Text style={styles.pointText}>
+                {userData.totalPoints ? userData.totalPoints : 0}
+              </Text>
             </View>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Last Transaction:</Text>
-            <Text style={styles.transactionText}>July 7th, 2024</Text>
+            <Text style={styles.transactionText}>
+              {userData.mostRecentTransaction
+                ? userData.mostRecentTransaction
+                : "No transactions yet"}
+            </Text>
           </View>
 
           <View style={styles.loginContainer}>
-            <TouchableOpacity
-              // fetch the encrypted QR code
-              onPress={fetchData}
-              style={styles.loginButton}
-            >
+            <TouchableOpacity onPress={fetchData} style={styles.loginButton}>
               <Text style={styles.loginButtonText}>Refresh</Text>
             </TouchableOpacity>
           </View>
@@ -196,6 +237,7 @@ const styles = StyleSheet.create({
   lower: {
     flex: 1,
     paddingTop: 100,
+    marginTop: 20,
     borderRadius: 32,
     backgroundColor: "#ggg",
     justifyContent: "flex-end",
@@ -225,7 +267,7 @@ const styles = StyleSheet.create({
   pointsSection: {
     backgroundColor: "#f5f5f5",
     padding: 15,
-    paddingBottom: 50,
+    paddingBottom: 30,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
   },
@@ -247,14 +289,16 @@ const styles = StyleSheet.create({
   pointText: {
     fontSize: 24,
     fontWeight: "bold",
+    marginEnd: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   transactionText: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
+    marginEnd: 10,
   },
   loginText: {
     marginBottom: 10,
