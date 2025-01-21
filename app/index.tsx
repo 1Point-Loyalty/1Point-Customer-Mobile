@@ -106,13 +106,13 @@ export default function LogIn() {
   // Function to handle registration
   const handleLogin = async () => {
     // format for email: characters@characters.characters
-    var emailError = ""
+    var emailError = "";
     let emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (emailFormat.test(email) === false) {
-      emailError = ("Please enter a valid email address");
+      emailError = "Please enter a valid email address";
     }
-    
-    var passwordError = ""
+
+    var passwordError = "";
     // password must contain at least one number
     let numberCheck = /\d/;
 
@@ -127,40 +127,42 @@ export default function LogIn() {
 
     // password must be at least 8 characters long
     if (password.length < 8) {
-      passwordError = ("Password must be at least 8 characters long");
+      passwordError = "Password must be at least 8 characters long";
     }
 
     // password must contain at least one number
     else if (numberCheck.test(password) === false) {
-      passwordError = ("Password must contain at least one number");
+      passwordError = "Password must contain at least one number";
     }
 
     // password must contain at least one uppercase letter
     else if (upperCaseCheck.test(password) === false) {
-      passwordError = ("Password must contain at least one uppercase letter");
+      passwordError = "Password must contain at least one uppercase letter";
     }
 
     // password must contain at least one lowercase letter
     else if (lowerCaseCheck.test(password) === false) {
-      passwordError = ("Password must contain at least one lowercase letter");
+      passwordError = "Password must contain at least one lowercase letter";
     }
 
     // password must contain at least one special character
     else if (specialCharCheck.test(password) === false) {
-      passwordError = ("Password must contain at least one special character");
+      passwordError = "Password must contain at least one special character";
     }
 
-    if (emailError != ""|| passwordError != "") {
-      alert(`Failed Validations: \n ${emailError} \n ${passwordError}`)
-      return
+    if (emailError != "" || passwordError != "") {
+      alert(`Failed Validations: \n ${emailError} \n ${passwordError}`);
+      return;
     }
     try {
-      await auth().signInWithEmailAndPassword(email, password)
+      await auth().signInWithEmailAndPassword(email, password);
     } catch (e: any) {
       const err = e as FirebaseError;
-      alert("Sign up failed - please check if entered email and password are correct");
-      console.log(err.message)
-      return
+      alert(
+        "Sign up failed - please check if entered email and password are correct"
+      );
+      console.log(err.message);
+      return;
     }
   };
 
@@ -225,9 +227,9 @@ export default function LogIn() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        accessibilityLabel="log in button"
+        accessibilityLabel="signup button"
         style={styles.signUpButton}
-        onPress={() => router.navigate("/home")}
+        onPress={handleLogin}
       >
         <Text style={styles.signUpButtonText}>Log In</Text>
       </TouchableOpacity>
