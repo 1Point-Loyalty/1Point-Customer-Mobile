@@ -54,7 +54,7 @@ export default function TransactionScreen() {
 
   const TransactionRow = ({transactionAmount, transactionLocation, transactionDate, imageUri} : {transactionAmount: number, transactionLocation: string, transactionDate: string, imageUri: string}) => {
     return(
-      <View style={{backgroundColor:'white', borderTopLeftRadius: 46, borderTopRightRadius: 46, borderBottomRightRadius: 46, borderBottomLeftRadius: 46, paddingBottom: 5, marginBottom:10}}>
+      <View style={styles.transactionPanels}>
         <View style={[styles.sliderSection, styles.shadowProp]}>
             <View>
               <Image            
@@ -172,6 +172,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+
+  //-------------- Transaction Section styling -----------------
   mainContainer: {
     backgroundColor: '#f5f5f5',
     flex: 1,
@@ -180,9 +182,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 46,
     borderTopRightRadius: 46,
   },
-
-  //-------------- Transaction Section styling -----------------
-
 sliderSection: {
   flexDirection: 'row',
   alignItems: 'center',
@@ -240,4 +239,13 @@ labelContainer: {
   fontSize: 16,
   width: '100%'
 },
+transactionPanels:{
+  backgroundColor:'white', 
+  borderTopLeftRadius: 46, 
+  borderTopRightRadius: 46, 
+  borderBottomRightRadius: 46, 
+  borderBottomLeftRadius: 46, 
+  paddingBottom: 5, 
+  marginBottom:10
+}
 });
