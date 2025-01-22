@@ -6,8 +6,98 @@ import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { ScrollView } from 'react-native';
 
-export default function TabTwoScreen() {
+export default function TransactionScreen() {
+  const transactionArray = [
+    {
+      transactionAmount: 14000,
+      transactionLocation: "Shawerma Plus",
+      transactionDate: "12/12/2021",
+      transactionCustomerId: "123456789",
+      transactionStatus: "Pending",
+      imageUri:'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
+    },
+    {
+      transactionAmount: 4000,
+      transactionLocation: "William's Fresh Cafe",
+      transactionDate: "12/12/2021",
+      transactionCustomerId: "123456789",
+      transactionStatus: "Pending",
+      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
+    },
+    {
+      transactionAmount: 12000,
+      transactionLocation: "Farah Food Mart",
+      transactionDate: "12/12/2021",
+      transactionCustomerId: "123456789",
+      transactionStatus: "Complete",
+      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
+    },
+    {
+      transactionAmount: 1000,
+      transactionLocation: "Shawerma Plus",
+      transactionDate: "12/12/2021",
+      transactionCustomerId: "123456789",
+      transactionStatus: "Complete",
+      imageUri:'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
+    },
+    {
+      transactionAmount: 150000,
+      transactionLocation: "Subway",
+      transactionDate: "12/12/2021",
+      transactionCustomerId: "123456789",
+      transactionStatus: "Complete",
+      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
+    },
+  ];
+
+  const TransactionRow = ({transactionAmount, transactionLocation, transactionDate, imageUri} : {transactionAmount: number, transactionLocation: string, transactionDate: string, imageUri: string}) => {
+    return(
+      <View style={styles.transactionPanels}>
+        <View style={[styles.sliderSection, styles.shadowProp]}>
+            <View>
+              <Image            
+              source={{uri: imageUri}}
+              style={styles.imageContainer}/>
+            </View>
+
+            <View style={styles.contentContainerWhole}>
+              <View style={{paddingVertical : 5}}>
+                <Text style={styles.businessContainer}>{transactionLocation}</Text>
+              </View>
+              <View style={styles.contentContainer}>
+                <Text style={[styles.labelContainer]}>
+                  {'Collected: '+ transactionAmount}
+                </Text>
+              </View>
+              <View style={styles.contentContainer}>
+                <Text style={[styles.labelContainer]}>
+                    {'Date: '+ transactionDate}
+                </Text>
+              </View>
+            </View>
+          </View>
+      </View>      
+    )
+  }
+
+  const mapTransactions = () => {
+    return(
+      <View>
+        {transactionArray.map((transaction) => {
+          return (
+            <TransactionRow
+              transactionAmount={transaction.transactionAmount}
+              transactionDate={transaction.transactionDate}
+              transactionLocation={transaction.transactionLocation}
+              imageUri = {transaction.imageUri}
+            />
+          );
+        })}
+      </View>
+    )
+  }
     // Render the home screen 
   return (
     <SafeAreaView style={styles.main}>
@@ -24,6 +114,14 @@ export default function TabTwoScreen() {
           </View>
         </View>
       </View>
+
+
+      <ScrollView style={styles.mainContainer}>
+       <View style={{paddingBottom:120}}>
+        {mapTransactions()}
+       </View>
+      </ScrollView>
+      
     </SafeAreaView >
   );
 };
@@ -35,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   container: {
-    flex: 1,
+    flex: 0,
     padding: 15,
     paddingTop: 40,
     backgroundColor: '#fff',
@@ -62,15 +160,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  newSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-    padding: 10,
-    borderRadius: 32,
-    margin: 5,
-    position: 'relative',
-  },
   headerImage: {
     width: 71,
     height: 71,
@@ -78,98 +167,85 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pointAmounts: {
-    width: 46,
-    height: 46,
-    marginRight: 10,
-  },
-  newBrandLogo: {
-    width: 120,
-    height: 120,
-    marginRight: 10,
-    borderRadius: 10,
-    margin: 5,
-  },
-  newLabelContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'black',
-    borderRadius: 32,
-  },
-  newLabel: {
-    color: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  newText: {
-    fontSize: 20,
-    marginLeft: 10,
-    fontWeight: 'bold',
-    flexShrink: 1,
-  },
-  pointsSection: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
-    paddingBottom: 50,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 32,
-    alignItems: 'center',
-    marginBottom: 10,
-    marginVertical: 24,
-    minHeight: 75
-  },
-  pointContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  pointText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
   transactionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  transactionText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  page: {
+
+  //-------------- Transaction Section styling -----------------
+  mainContainer: {
+    backgroundColor: '#f5f5f5',
     flex: 1,
-    padding: 15,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-    maxHeight: 200,
+    padding: 30,
+    paddingTop: 20,
+    borderTopLeftRadius: 46,
+    borderTopRightRadius: 46,
   },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: 'black',
-  },
-  inactiveDot: {
-    backgroundColor: 'gray',
-  },
+sliderSection: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  padding: 10,
+  borderRadius: 26,
+  margin: 5,
+  position: 'relative',
+  minHeight: 100,
+},
+
+shadowProp: {
+  shadowColor: '#171717',
+  shadowOffset: {width: -2, height: 4},
+  shadowOpacity: 0.15,
+  shadowRadius: 3,
+},
+
+imageContainer: {
+  width: 71,
+  height: 71,
+  marginRight: 20,
+  justifyContent: 'center',
+  alignItems: 'center',
+  color: '#FFFFFF',
+  borderTopLeftRadius: 15,
+  borderTopRightRadius: 15,
+  borderBottomLeftRadius: 15,
+  borderBottomRightRadius: 15,
+},
+contentContainerWhole: {
+  flexDirection: 'column',
+  justifyContent: 'center',
+  width: '70%',
+  padding: 5,
+},
+businessContainer: {
+  backgroundColor: 'green',
+  color: 'white',
+  textAlign: 'center',
+  borderRadius: 26,
+  fontSize: 22,
+  width: '100%',
+  fontWeight:"bold"
+},
+contentContainer: {
+  flexDirection: 'row',
+  paddingVertical: 5,
+  width: '100%',
+},
+labelContainer: {
+  backgroundColor: 'lightgrey',
+  color: 'black',
+  textAlign: 'center',
+  borderRadius: 26,
+  fontSize: 16,
+  width: '100%'
+},
+transactionPanels:{
+  backgroundColor:'white', 
+  borderTopLeftRadius: 46, 
+  borderTopRightRadius: 46, 
+  borderBottomRightRadius: 46, 
+  borderBottomLeftRadius: 46, 
+  paddingBottom: 5, 
+  marginBottom:10
+}
 });
