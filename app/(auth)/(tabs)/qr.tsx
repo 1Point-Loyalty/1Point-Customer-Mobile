@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
 import auth from "@react-native-firebase/auth";
 import QRCode from "react-native-qrcode-svg";
 import moment from "moment";
+import ContentLoader, { Rect } from "react-content-loader/native";
 
 export default function TabTwoScreen() {
+  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -25,6 +27,7 @@ export default function TabTwoScreen() {
 
   // call fetchData every 5 minutes
   const fetchData = useCallback(async () => {
+    setLoading(true);
     const user = auth().currentUser;
     const userId = user?.uid;
 
@@ -80,9 +83,13 @@ export default function TabTwoScreen() {
         alert(`Error: Failed to create QR code:`);
         console.error(error);
       });
+
+    await new Promise((r) => setTimeout(r, 2000));
+    setLoading(false);
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
     const autoRefresh = setInterval(fetchData, 60000);
 
@@ -105,12 +112,25 @@ export default function TabTwoScreen() {
 
         <View style={styles.qrCodeContainer}>
           <View style={styles.qrCode}>
-            <QRCode
-              backgroundColor="transparent"
-              value={encryptedQRCode}
-              size={120}
-              color="white"
-            />
+            {loading ? (
+              <ContentLoader
+                speed={1}
+                width={120}
+                height={120}
+                viewBox="0 0 120 120"
+                backgroundColor="#242121"
+                foregroundColor="#8888"
+              >
+                <Rect x="5" y="5" rx="5" ry="5" width="120" height="120" />
+              </ContentLoader>
+            ) : (
+              <QRCode
+                backgroundColor="transparent"
+                value={encryptedQRCode}
+                size={120}
+                color="white"
+              />
+            )}
           </View>
           <View style={styles.qrCodeText}>
             <Text
@@ -134,16 +154,30 @@ export default function TabTwoScreen() {
               {userData.lastName.toUpperCase()}
             </Text>
             <Text> </Text>
-            <Text
-              style={{
-                color: "white",
-                fontFamily: "Inter",
-                fontSize: 14,
-                fontWeight: "bold",
-              }}
-            >
-              MEMBER SINCE: {userData.createdAt}
-            </Text>
+
+            {loading ? (
+              <ContentLoader
+                speed={1}
+                width={200}
+                height={25}
+                viewBox="100 0 200 30"
+                backgroundColor="#242121"
+                foregroundColor="#8888"
+              >
+                <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+              </ContentLoader>
+            ) : (
+              <Text
+                style={{
+                  color: "white",
+                  fontFamily: "Inter",
+                  fontSize: 14,
+                  fontWeight: "bold",
+                }}
+              >
+                MEMBER SINCE: {userData.createdAt}
+              </Text>
+            )}
           </View>
         </View>
       </View>
@@ -158,7 +192,22 @@ export default function TabTwoScreen() {
                 source={require("@/assets/images/1Point_Logo.png")}
                 style={styles.pointAmounts}
               />
-              <Text style={styles.pointText}>{userData.currentPoints}</Text>
+              {loading ? (
+                <ContentLoader
+                  speed={1}
+                  width={200}
+                  height={30}
+                  viewBox="100 0 200 30"
+                  backgroundColor="#f3f3f3"
+                  foregroundColor="#ecebeb"
+                >
+                  <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                </ContentLoader>
+              ) : (
+                <Text style={styles.pointText}>
+                  {userData.currentPoints ? userData.currentPoints : 0}
+                </Text>
+              )}
             </View>
           </View>
 
@@ -170,21 +219,46 @@ export default function TabTwoScreen() {
                 source={require("@/assets/images/1Point_Logo.png")}
                 style={styles.pointAmounts}
               />
-              <Text style={styles.pointText}>
-                {userData.totalPoints ? userData.totalPoints : 0}
-              </Text>
+              {loading ? (
+                <ContentLoader
+                  speed={1}
+                  width={200}
+                  height={30}
+                  viewBox="100 0 200 30"
+                  backgroundColor="#f3f3f3"
+                  foregroundColor="#ecebeb"
+                >
+                  <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                </ContentLoader>
+              ) : (
+                <Text style={styles.pointText}>
+                  {userData.totalPoints ? userData.totalPoints : 0}
+                </Text>
+              )}
             </View>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Last Transaction:</Text>
-            <Text style={styles.transactionText}>
-              {userData.mostRecentTransaction
-                ? userData.mostRecentTransaction
-                : "N/A"}
-            </Text>
+            {loading ? (
+              <ContentLoader
+                speed={1}
+                width={200}
+                height={30}
+                viewBox="0 0 200 30"
+                backgroundColor="#f3f3f3"
+                foregroundColor="#ecebeb"
+              >
+                <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+              </ContentLoader>
+            ) : (
+              <Text style={styles.transactionText}>
+                {userData.mostRecentTransaction
+                  ? userData.mostRecentTransaction
+                  : "N/A"}
+              </Text>
+            )}
           </View>
-
           <View style={styles.loginContainer}>
             <TouchableOpacity onPress={fetchData} style={styles.loginButton}>
               <Text style={styles.loginButtonText}>Refresh</Text>
@@ -201,6 +275,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 15,
     backgroundColor: "#fff",
+  },
+  contentLoader: {
+    marginVertical: 20,
   },
   container: {
     flex: 1,
@@ -263,6 +340,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     marginRight: 10,
+    marginLeft: 10,
   },
   pointsSection: {
     backgroundColor: "#f5f5f5",
