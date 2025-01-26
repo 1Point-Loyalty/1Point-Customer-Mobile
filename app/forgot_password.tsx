@@ -15,6 +15,7 @@ import PhoneInput from "react-native-phone-input";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 
 export default function forgotPassword() {
@@ -22,10 +23,16 @@ export default function forgotPassword() {
   const navigation = useNavigation();
   navigation.setOptions({ headerShown: false });
   const [messageVisible, setMessageVisible] = useState(false);
+  const [email, setEmail] = useState("");
 
   const handleSendEmail = () => {
-    setMessageVisible(true);
-    
+    auth().sendPasswordResetEmail(email)
+    .then(() => {
+      setMessageVisible(true);
+    })
+    .catch((error: any) => {
+      alert(error);
+    });
 
     //Eventually add code here to send email to users
   };
@@ -62,6 +69,7 @@ export default function forgotPassword() {
               accessibilityLabel="email input"
               placeholder="Email"
               style={styles.emailText}
+              onChangeText={setEmail}
             />
           </View>
           
