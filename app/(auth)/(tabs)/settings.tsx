@@ -21,9 +21,19 @@ export default function Settings() {
   const [messageVisible, setMessageVisible] = useState(false);
 
   const handleChangePassword = () => {
-    setMessageVisible(true);
+    var user = auth().currentUser
+    var email = ""
+    if (user != null && user.email != null) {
+      email = user.email
+    }
+    auth().sendPasswordResetEmail(email)
+    .then(() => {
+      setMessageVisible(true);
+    })
+    .catch((error: any) => {
+      alert(error);
+    });
 
-    //Eventually add code here to send email to users
   };
 
   return (
