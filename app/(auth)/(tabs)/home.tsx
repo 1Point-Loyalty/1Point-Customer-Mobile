@@ -40,13 +40,13 @@ export default function HomeScreen() {
   const totalPages = pages.length; // Total number of pages
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
-      firstName: "",
-      lastName: "",
-      createdAt: "",
-      currentPoints: 0,
-      totalPoints: 0,
-      mostRecentTransaction: "",
-    });
+    firstName: "",
+    lastName: "",
+    createdAt: "",
+    currentPoints: 0,
+    totalPoints: 0,
+    mostRecentTransaction: "",
+  });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -90,12 +90,12 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-      setLoading(true);
-      fetchData();
-      const autoRefresh = setInterval(fetchData, 60000);
-  
-      return () => clearInterval(autoRefresh);
-    }, [fetchData]);
+    setLoading(true);
+    fetchData();
+    const autoRefresh = setInterval(fetchData, 60000);
+
+    return () => clearInterval(autoRefresh);
+  }, [fetchData]);
 
   // Auto-scroll every 4 seconds to the next page in the list of pages
   useEffect(() => {
@@ -166,73 +166,107 @@ export default function HomeScreen() {
   const renderPointsSection = () => {
     return (
       <View>
-      {loading ? 
-        (
-          <View></View>
-        ) : 
-        (
-          <View style={styles.pointsSection}>
-            
-            <View style={styles.row}>
-            
-              <Text style={styles.label}>Current Point Balance:</Text>
-    
-              <View style={styles.pointContainer}>
-                <Image
-                  source={require("@/assets/images/1Point_Logo.png")}
-                  style={styles.pointAmounts}
-                />
+        <View style={styles.pointsSection}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Current Point Balance:</Text>
+
+            <View style={styles.pointContainer}>
+              <Image
+                source={require("@/assets/images/1Point_Logo.png")}
+                style={styles.pointAmounts}
+              />
+              {loading ? (
+                <ContentLoader
+                  speed={1}
+                  width={200}
+                  height={30}
+                  viewBox="100 0 200 30"
+                  backgroundColor="#f3f3f3"
+                  foregroundColor="#ecebeb"
+                >
+                  <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                </ContentLoader>
+              ) : (
                 <Text style={styles.pointText}>{userData.currentPoints}</Text>
-              </View>
-            </View>
-    
-            <View style={styles.row}>
-              <Text style={styles.label}>Total Points Collected:</Text>
-    
-              <View style={styles.pointContainer}>
-                <Image
-                  source={require("@/assets/images/1Point_Logo.png")}
-                  style={styles.pointAmounts}
-                />
-                <Text style={styles.pointText}>{userData.totalPoints ? userData.totalPoints : 0}</Text>
-              </View>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Last Transaction:</Text>
-              <Text style={styles.transactionText}>{userData.mostRecentTransaction ? userData.mostRecentTransaction : "N/A"}</Text>
+              )}
             </View>
           </View>
-        )
-      }
+
+          <View style={styles.row}>
+            <Text style={styles.label}>Total Points Collected:</Text>
+
+            <View style={styles.pointContainer}>
+              <Image
+                source={require("@/assets/images/1Point_Logo.png")}
+                style={styles.pointAmounts}
+              />
+              {loading ? (
+                <ContentLoader
+                  speed={1}
+                  width={200}
+                  height={30}
+                  viewBox="100 0 200 30"
+                  backgroundColor="#f3f3f3"
+                  foregroundColor="#ecebeb"
+                >
+                  <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                </ContentLoader>
+              ) : (
+                <Text style={styles.pointText}>
+                  {userData.totalPoints ? userData.totalPoints : 0}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Last Transaction:</Text>
+            {loading ? (
+              <ContentLoader
+                speed={1}
+                width={200}
+                height={30}
+                viewBox="0 0 200 30"
+                backgroundColor="#f3f3f3"
+                foregroundColor="#ecebeb"
+              >
+                <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+              </ContentLoader>
+            ) : (
+              <Text style={styles.transactionText}>
+                {userData.mostRecentTransaction
+                  ? userData.mostRecentTransaction
+                  : "N/A"}
+              </Text>
+            )}
+          </View>
+        </View>
       </View>
-    )
+    );
   };
 
   // Render the home screen
   return (
     <SafeAreaView style={styles.main}>
-            <View style={styles.container}>
-            
-              <View style={styles.header}>
-                <Image
-                  source={require("@/assets/images/1Point_Logo.png")}
-                  style={styles.headerImage}
-                />
-                <View style={styles.headerText}>
-                {loading ? 
-                  (
-                    <View></View>
-                  ) : 
-                  (
-                  <Text style={styles.welcomeText}>Welcome {userData.firstName}!</Text>
-                  )
-                }  
-                </View>
-              </View>
-              {renderPages()}
-              {renderPageDots()}
-            </View>
-        <View style={styles.lower}>{renderPointsSection()}</View>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Image
+            source={require("@/assets/images/1Point_Logo.png")}
+            style={styles.headerImage}
+          />
+          <View style={styles.headerText}>
+            {loading ? (
+              <Text style={styles.welcomeText}>Welcome!</Text>
+            ) : (
+              <Text style={styles.welcomeText}>
+                Welcome {userData.firstName}!
+              </Text>
+            )}
+          </View>
+        </View>
+        {renderPages()}
+        {renderPageDots()}
+      </View>
+      <View style={styles.lower}>{renderPointsSection()}</View>
     </SafeAreaView>
   );
 }
@@ -291,6 +325,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     marginRight: 10,
+    marginLeft: 10,
   },
   newBrandLogo: {
     width: 120,
