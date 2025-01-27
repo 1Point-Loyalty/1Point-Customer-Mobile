@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import auth from "@react-native-firebase/auth";
+import ContentLoader, { Rect } from "react-content-loader/native";
+import moment from "moment";
 
 export default function HomeScreen() {
   // Array of pages to display
@@ -36,6 +38,64 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(0); // Track the current page
   const pagerRef = useRef<PagerView>(null); // Reference to the pager view
   const totalPages = pages.length; // Total number of pages
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState({
+      firstName: "",
+      lastName: "",
+      createdAt: "",
+      currentPoints: 0,
+      totalPoints: 0,
+      mostRecentTransaction: "",
+    });
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const user = auth().currentUser;
+    const userId = user?.uid;
+
+    const token = await user?.getIdToken();
+
+    fetch(`https://admin.1-point.ca/api/getUser/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // format dates
+        const formattedData = {
+          ...data[0],
+          createdAt: moment(data[0].createdAt).format("MM/YY"),
+          // format the most recent transaction date
+          mostRecentTransaction: data[0].mostRecentTransaction
+            ? moment(data[0].mostRecentTransaction).format("YYYY/MM/DD")
+            : null,
+        };
+        setUserData(formattedData);
+      })
+      .catch((error) => {
+        alert(`Error: ${error.message}`);
+        console.error(error);
+      });
+
+    await new Promise((r) => setTimeout(r, 2000));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+      setLoading(true);
+      fetchData();
+      const autoRefresh = setInterval(fetchData, 60000);
+  
+      return () => clearInterval(autoRefresh);
+    }, [fetchData]);
 
   // Auto-scroll every 4 seconds to the next page in the list of pages
   useEffect(() => {
@@ -105,58 +165,74 @@ export default function HomeScreen() {
   // Render the points section
   const renderPointsSection = () => {
     return (
-      <View style={styles.pointsSection}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Current Point Balance:</Text>
-
-          <View style={styles.pointContainer}>
-            <Image
-              source={require("@/assets/images/1Point_Logo.png")}
-              style={styles.pointAmounts}
-            />
-            <Text style={styles.pointText}>1,978</Text>
+      <View>
+      {loading ? 
+        (
+          <View></View>
+        ) : 
+        (
+          <View style={styles.pointsSection}>
+            
+            <View style={styles.row}>
+            
+              <Text style={styles.label}>Current Point Balance:</Text>
+    
+              <View style={styles.pointContainer}>
+                <Image
+                  source={require("@/assets/images/1Point_Logo.png")}
+                  style={styles.pointAmounts}
+                />
+                <Text style={styles.pointText}>{userData.currentPoints}</Text>
+              </View>
+            </View>
+    
+            <View style={styles.row}>
+              <Text style={styles.label}>Total Points Collected:</Text>
+    
+              <View style={styles.pointContainer}>
+                <Image
+                  source={require("@/assets/images/1Point_Logo.png")}
+                  style={styles.pointAmounts}
+                />
+                <Text style={styles.pointText}>{userData.totalPoints ? userData.totalPoints : 0}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Last Transaction:</Text>
+              <Text style={styles.transactionText}>{userData.mostRecentTransaction ? userData.mostRecentTransaction : "N/A"}</Text>
+            </View>
           </View>
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Total Points Collected:</Text>
-
-          <View style={styles.pointContainer}>
-            <Image
-              source={require("@/assets/images/1Point_Logo.png")}
-              style={styles.pointAmounts}
-            />
-            <Text style={styles.pointText}>34,909</Text>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Last Transaction:</Text>
-          <Text style={styles.transactionText}>July 7th, 2024</Text>
-        </View>
+        )
+      }
       </View>
-    );
+    )
   };
 
   // Render the home screen
   return (
     <SafeAreaView style={styles.main}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Image
-            source={require("@/assets/images/1Point_Logo.png")}
-            style={styles.headerImage}
-          />
-          <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>Welcome John!</Text>
-          </View>
-        </View>
-
-        {renderPages()}
-        {renderPageDots()}
-      </View>
-
-      <View style={styles.lower}>{renderPointsSection()}</View>
+            <View style={styles.container}>
+            
+              <View style={styles.header}>
+                <Image
+                  source={require("@/assets/images/1Point_Logo.png")}
+                  style={styles.headerImage}
+                />
+                <View style={styles.headerText}>
+                {loading ? 
+                  (
+                    <View></View>
+                  ) : 
+                  (
+                  <Text style={styles.welcomeText}>Welcome {userData.firstName}!</Text>
+                  )
+                }  
+                </View>
+              </View>
+              {renderPages()}
+              {renderPageDots()}
+            </View>
+        <View style={styles.lower}>{renderPointsSection()}</View>
     </SafeAreaView>
   );
 }
