@@ -1,18 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   SafeAreaView,
-  Button,
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import PagerView from "react-native-pager-view";
 import auth from "@react-native-firebase/auth";
 import { useRouter } from "expo-router";
-import { useNavigation } from "@react-navigation/native";
+import ContentLoader, { Rect } from "react-content-loader/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import PhoneInput from "react-native-phone-input";
 import moment from "moment";
@@ -26,19 +24,19 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   const handleChangePassword = () => {
-    var user = auth().currentUser
-    var email = ""
+    var user = auth().currentUser;
+    var email = "";
     if (user != null && user.email != null) {
-      email = user.email
+      email = user.email;
     }
-    auth().sendPasswordResetEmail(email)
-    .then(() => {
-      setMessageVisible(true);
-    })
-    .catch((error: any) => {
-      alert(error);
-    });
-
+    auth()
+      .sendPasswordResetEmail(email)
+      .then(() => {
+        setMessageVisible(true);
+      })
+      .catch((error: any) => {
+        alert(error);
+      });
   };
 
   const fetchData = useCallback(async () => {
@@ -71,26 +69,26 @@ export default function Settings() {
             ? moment(data[0].mostRecentTransaction).format("YYYY/MM/DD")
             : null,
         };
-        setName(formattedData.firstName+" "+formattedData.lastName)
-        setEmail(formattedData.email)
-        setPhone(formattedData.phoneNumber)
+        setName(formattedData.firstName + " " + formattedData.lastName);
+        setEmail(formattedData.email);
+        setPhone(formattedData.phoneNumber);
       })
       .catch((error) => {
         alert(`Error: ${error.message}`);
         console.error(error);
       });
-      
+
     await new Promise((r) => setTimeout(r, 2000));
     setLoading(false);
   }, []);
 
   useEffect(() => {
-      setLoading(true);
-      fetchData();
-      const autoRefresh = setInterval(fetchData, 60000);
-  
-      return () => clearInterval(autoRefresh);
-    }, [fetchData]);
+    setLoading(true);
+    fetchData();
+    const autoRefresh = setInterval(fetchData, 60000);
+
+    return () => clearInterval(autoRefresh);
+  }, [fetchData]);
 
   return (
     <SafeAreaView style={styles.main}>
@@ -118,11 +116,18 @@ export default function Settings() {
               color="black"
             />
           </View>
-          {loading ? 
-            (
-              <View></View>
-            ) : 
-            (
+          {loading ? (
+            <ContentLoader
+              speed={1}
+              width={400}
+              height={30}
+              viewBox="50 0 200 30"
+              backgroundColor="#f3f3f3"
+              foregroundColor="#ecebeb"
+            >
+              <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+            </ContentLoader>
+          ) : (
             <TextInput
               accessibilityLabel="name"
               placeholder="First Last"
@@ -130,7 +135,7 @@ export default function Settings() {
               onChangeText={setName}
               style={styles.input}
             ></TextInput>
-            )}
+          )}
         </View>
 
         <View style={styles.row}>
@@ -142,11 +147,18 @@ export default function Settings() {
               color="black"
             />
           </View>
-          {loading ? 
-            (
-              <View></View>
-            ) : 
-            (
+          {loading ? (
+            <ContentLoader
+              speed={1}
+              width={400}
+              height={30}
+              viewBox="50 0 200 30"
+              backgroundColor="#f3f3f3"
+              foregroundColor="#ecebeb"
+            >
+              <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+            </ContentLoader>
+          ) : (
             <TextInput
               accessibilityLabel="email"
               value={email}
@@ -154,23 +166,29 @@ export default function Settings() {
               placeholder="example@gmail.com"
               style={styles.input}
             ></TextInput>
-            )}
+          )}
         </View>
-        
+
         <View style={styles.row}>
-        {loading ? 
-            (
-              <View></View>
-            ) : 
-            (
+          {loading ? (
+            <ContentLoader
+              speed={1}
+              width={400}
+              height={30}
+              viewBox="50 0 200 30"
+              backgroundColor="#f3f3f3"
+              foregroundColor="#ecebeb"
+            >
+              <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+            </ContentLoader>
+          ) : (
             <PhoneInput
-              style={styles.input} 
-              initialCountry="ca" 
+              style={styles.input}
+              initialCountry="ca"
               initialValue={phone}
               onChangePhoneNumber={setPhone}
-              >
-            </PhoneInput>
-            )}
+            ></PhoneInput>
+          )}
         </View>
 
         <TouchableOpacity
