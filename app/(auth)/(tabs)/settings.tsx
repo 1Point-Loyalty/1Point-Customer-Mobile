@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,10 +15,15 @@ import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import PhoneInput from "react-native-phone-input";
+import moment from "moment";
 
 export default function Settings() {
   const router = useRouter();
   const [messageVisible, setMessageVisible] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const handleChangePassword = () => {
     var user = auth().currentUser
@@ -35,6 +40,57 @@ export default function Settings() {
     });
 
   };
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const user = auth().currentUser;
+    const userId = user?.uid;
+
+    const token = await user?.getIdToken();
+
+    fetch(`https://admin.1-point.ca/api/getUser/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // format dates
+        const formattedData = {
+          ...data[0],
+          createdAt: moment(data[0].createdAt).format("MM/YY"),
+          // format the most recent transaction date
+          mostRecentTransaction: data[0].mostRecentTransaction
+            ? moment(data[0].mostRecentTransaction).format("YYYY/MM/DD")
+            : null,
+        };
+        setName(formattedData.firstName+" "+formattedData.lastName)
+        setEmail(formattedData.email)
+        setPhone(formattedData.phoneNumber)
+      })
+      .catch((error) => {
+        alert(`Error: ${error.message}`);
+        console.error(error);
+      });
+      
+    await new Promise((r) => setTimeout(r, 2000));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+      setLoading(true);
+      fetchData();
+      const autoRefresh = setInterval(fetchData, 60000);
+  
+      return () => clearInterval(autoRefresh);
+    }, [fetchData]);
 
   return (
     <SafeAreaView style={styles.main}>
@@ -62,11 +118,19 @@ export default function Settings() {
               color="black"
             />
           </View>
-          <TextInput
-            accessibilityLabel="name"
-            placeholder="John Doe"
-            style={styles.input}
-          ></TextInput>
+          {loading ? 
+            (
+              <View></View>
+            ) : 
+            (
+            <TextInput
+              accessibilityLabel="name"
+              placeholder="First Last"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            ></TextInput>
+            )}
         </View>
 
         <View style={styles.row}>
@@ -78,15 +142,35 @@ export default function Settings() {
               color="black"
             />
           </View>
-          <TextInput
-            accessibilityLabel="email"
-            placeholder="john.doe@gmail.com"
-            style={styles.input}
-          ></TextInput>
+          {loading ? 
+            (
+              <View></View>
+            ) : 
+            (
+            <TextInput
+              accessibilityLabel="email"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="example@gmail.com"
+              style={styles.input}
+            ></TextInput>
+            )}
         </View>
-
+        
         <View style={styles.row}>
-          <PhoneInput style={styles.input} initialCountry="ca" />
+        {loading ? 
+            (
+              <View></View>
+            ) : 
+            (
+            <PhoneInput
+              style={styles.input} 
+              initialCountry="ca" 
+              initialValue={phone}
+              onChangePhoneNumber={setPhone}
+              >
+            </PhoneInput>
+            )}
         </View>
 
         <TouchableOpacity
