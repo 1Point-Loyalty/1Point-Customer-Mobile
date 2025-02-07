@@ -1,58 +1,85 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { View, Text, StyleSheet, Image, SafeAreaView, Button, TextInput, TouchableOpacity } from 'react-native';
-
+import React, {useCallback, useEffect, useRef, useState } from "react";
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ScrollView } from 'react-native';
+import moment from "moment";
+import auth from "@react-native-firebase/auth";
 
 export default function TransactionScreen() {
-  const transactionArray = [
-    {
-      transactionAmount: 14000,
-      transactionLocation: "Shawerma Plus",
-      transactionDate: "12/12/2021",
-      transactionCustomerId: "123456789",
-      transactionStatus: "Pending",
-      imageUri:'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-    },
-    {
-      transactionAmount: 4000,
-      transactionLocation: "William's Fresh Cafe",
-      transactionDate: "12/12/2021",
-      transactionCustomerId: "123456789",
-      transactionStatus: "Pending",
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-    },
-    {
-      transactionAmount: 12000,
-      transactionLocation: "Farah Food Mart",
-      transactionDate: "12/12/2021",
-      transactionCustomerId: "123456789",
-      transactionStatus: "Complete",
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-    },
-    {
-      transactionAmount: 1000,
-      transactionLocation: "Shawerma Plus",
-      transactionDate: "12/12/2021",
-      transactionCustomerId: "123456789",
-      transactionStatus: "Complete",
-      imageUri:'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-    },
-    {
-      transactionAmount: 150000,
-      transactionLocation: "Subway",
-      transactionDate: "12/12/2021",
-      transactionCustomerId: "123456789",
-      transactionStatus: "Complete",
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-    },
-  ];
+  
 
-  const TransactionRow = ({transactionAmount, transactionLocation, transactionDate, imageUri} : {transactionAmount: number, transactionLocation: string, transactionDate: string, imageUri: string}) => {
+  const [loading, setLoading] = useState(true);
+
+  type transaction = {
+    transactionAmount: string,
+    transactionLocation: string,
+    customerID: string, 
+    transactionDate:string,
+    transactionType: string,
+    imageUri: string,
+  }
+  
+  const [transactionData, setTransactionData] = useState<transaction[]>([]);
+
+
+
+  const fetchData = useCallback (async () => {
+    setLoading (true);
+    const user = auth().currentUser;
+    const userId = user?.uid;
+
+    const token = await user?.getIdToken();
+
+    fetch (`https://admin.1-point.ca/api/getUserTransactions/${userId}`, {
+      method: "GET",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization: `Bearer ${token}`,        
+      },     
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data: any[]) => {
+        //console.log("Fetched Transactions: ", data);
+        const formattedData: transaction[] = data.map((transaction: { pointsEquivalent: string; merchant_name: string; createdAt: string; type: string; logoURL: string; userID: string; }) => ({
+          transactionAmount: transaction.pointsEquivalent,
+          transactionLocation: transaction.merchant_name,
+          transactionDate: moment(transaction.createdAt).format("YYYY/MM/DD"),
+          transactionType: transaction.type,
+          imageUri: transaction.logoURL,
+          customerID: transaction.userID,
+      }));
+        //console.log("formatted transactions: ", formattedData);
+        setTransactionData(formattedData);
+      })
+      .catch((error) =>{
+        alert (`Error: ${error.message}`);
+        console.error(error);
+      });
+
+    await new Promise((r) => setTimeout(r,2000));
+    setLoading(false);      
+  }, []);
+
+  useEffect(() =>{
+    setLoading(true);
+    fetchData();
+    const autoRefresh = setInterval(fetchData, 60000);
+
+    return() => clearInterval(autoRefresh);
+  }, [fetchData]);
+
+
+  const TransactionRow = ({transactionAmount, transactionLocation, transactionDate, imageUri, transactionType} : {transactionAmount: string, transactionLocation: string, transactionDate: string, imageUri: string, transactionType: string}) => {
     return(
       <View style={styles.transactionPanels}>
         <View style={[styles.sliderSection, styles.shadowProp]}>
@@ -68,7 +95,9 @@ export default function TransactionScreen() {
               </View>
               <View style={styles.contentContainer}>
                 <Text style={[styles.labelContainer]}>
-                  {'Collected: '+ transactionAmount}
+                  {transactionType === "redemption"
+                  ? `Redeemed: ${transactionAmount}`
+                  : `Collected: ${transactionAmount}`}
                 </Text>
               </View>
               <View style={styles.contentContainer}>
@@ -85,13 +114,15 @@ export default function TransactionScreen() {
   const mapTransactions = () => {
     return(
       <View>
-        {transactionArray.map((transaction) => {
+        {transactionData.map((i, index) => {
           return (
             <TransactionRow
-              transactionAmount={transaction.transactionAmount}
-              transactionDate={transaction.transactionDate}
-              transactionLocation={transaction.transactionLocation}
-              imageUri = {transaction.imageUri}
+              key={index}
+              transactionAmount={i.transactionAmount}
+              transactionDate={i.transactionDate}
+              transactionLocation={i.transactionLocation}
+              imageUri = {i.imageUri}
+              transactionType = {i.transactionType}
             />
           );
         })}

@@ -48,7 +48,7 @@ export default function HomeScreen() {
     mostRecentTransaction: "",
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback (async () => {
     setLoading(true);
     const user = auth().currentUser;
     const userId = user?.uid;
