@@ -90,6 +90,46 @@ export default function Settings() {
     return () => clearInterval(autoRefresh);
   }, [fetchData]);
 
+  const handleUpdateUser = async () => {
+    try {
+      const user = auth().currentUser;
+      const userId = user?.uid;
+
+      const token = await user?.getIdToken();
+
+      const [firstName, lastName] = name.split(" ");
+
+      const updatedUserData = {
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email,
+        phoneNumber: phone
+      };
+
+      const response = await fetch(`https://admin.1-point.ca/api/editUser/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedUserData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      console.log("User updated successfully: ", data);
+      alert("User information updated successfully!");
+
+    } catch (error) {
+      console.error("Error updating user: ", error);
+      //alert(`Error updating user: ${error.message}`);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.main}>
       {/* Header */}
@@ -191,6 +231,15 @@ export default function Settings() {
           )}
         </View>
 
+        <TouchableOpacity
+          style={styles.changePassword}
+          accessibilityLabel="save changes"
+          onPress={handleUpdateUser}
+        >
+          <Text style={styles.pointText}>Save Changes</Text>
+        </TouchableOpacity>
+
+        
         <TouchableOpacity
           style={styles.changePassword}
           accessibilityLabel="change password"
