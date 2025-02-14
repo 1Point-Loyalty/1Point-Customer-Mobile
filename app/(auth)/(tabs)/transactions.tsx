@@ -28,7 +28,7 @@ export default function TransactionScreen() {
 
 
 
-  const fetchData = useCallback (async () => {
+const fetchData = useCallback (async () => {
     setLoading (true);
     const user = auth().currentUser;
     const userId = user?.uid;
@@ -50,7 +50,7 @@ export default function TransactionScreen() {
       })
       .then((data: any[]) => {
         //console.log("Fetched Transactions: ", data);
-        const formattedData: transaction[] = data.map((transaction: { pointsEquivalent: string; merchant_name: string; createdAt: string; type: string; logoURL: string; userID: string; }) => ({
+        const formattedData: transaction[] = data.map((transaction: {pointsEquivalent: string; merchant_name: string; createdAt: string; type: string; logoURL: string; userID: string;}) => ({
           transactionAmount: transaction.pointsEquivalent,
           transactionLocation: transaction.merchant_name,
           transactionDate: moment(transaction.createdAt).format("YYYY/MM/DD"),
