@@ -1,30 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity, Button, ScrollView, Modal } from 'react-native';
-import PagerView from 'react-native-pager-view';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity, Button, ScrollView, Modal, Dimensions } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { useNavigation } from 'expo-router';
-import QRCode from 'react-native-qrcode-svg';
+import MaterialCommunityIcons from '@expo/vector-icons/build/MaterialCommunityIcons';
+const { width } = Dimensions.get("window");
 
-export default function HomeScreen() {
 
-  // Array of pages to display
-  const pages = [
-    {
-      key: '1',
-      imageUri: 'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-      text: 'Shawerma Plus has joined 1Point!',
-    },
-    {
-      key: '2',
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-      text: 'Williams Fresh Cafe has joined 1Point!',
-    },
-    {
-      key: '3',
-      imageUri: 'https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8',
-      text: "Tahini's has joined 1Point!",
-    },
-  ];
+export default function BusinessCatalog() {
 
   type typeBusiness = {
     key: string,
@@ -34,9 +16,12 @@ export default function HomeScreen() {
     address: string,
     contact: string,
     website: string,
-    offer: boolean,
-    coupons: coupon[]
+    offer: number,
+    bio: string,
   }
+
+  const [merchantData, setMerchantData] = useState<typeBusiness[]>([]);
+  const [selectedBusiness, setSelectedBusiness] = useState<typeBusiness|null>(null);
 
   type coupon = {
     id: string,
@@ -44,159 +29,140 @@ export default function HomeScreen() {
     qrCode: string,
   }
 
-  const businesses = [
-    {
-      key: '1',
-      imageUri: 'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-      name: 'Shawerma Plus',
-      type: "Fast Food",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: true,
-      coupons: [
-        { id: '102', name: '15% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-      ]
-    },
-    {
-      key: '2',
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-      name: 'Williams Fresh Cafe!',
-      type: "Cafe",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: true,
-      coupons: [
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-      ]
-    },
-    {
-      key: '3',
-      imageUri: 'https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8',
-      name: "Tahini's!",
-      type: "Fast Food",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: false,
-      coupons: [
-      ]
-    },
-  ]
+  const fetchMerchants = useCallback(async () => {
+    const user = auth().currentUser;
 
-  const [currentPage, setCurrentPage] = useState(0);  // Track the current page
-  const pagerRef = useRef<PagerView>(null); // Reference to the pager view
-  const totalPages = pages.length; // Total number of pages
+    const token = await user?.getIdToken();
 
-  // Auto-scroll every 4 seconds to the next page in the list of pages 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPage(prevPage => {
-        // Calculate the next page to display 
-        const nextPage = (prevPage + 1) % totalPages;
-        // If the pagerRef is available, set the page to the next page
-        if (pagerRef.current) {
-          pagerRef.current.setPage(nextPage);
+    fetch(`https://admin.1-point.ca/api/getMerchants`, {
+      method: `GET`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status: ${response.status}`);
         }
-        // Return the next page
-        return nextPage;
-      });
-    }, 4000);
-
-    return () => clearInterval(interval);
+        return response.json();
+      })
+      .then((data: any[]) => {
+        const formattedMerchants: typeBusiness[] = data.map((business: { merchantId: string, logoURL: string, name: string, type: string, address: string, phoneNumber: string, website: string, offer: number, bio: string }) => ({
+          key: business.merchantId,
+          imageUri: business.logoURL,
+          name: business.name,
+          type: business.type,
+          address: business.address,
+          contact: business.phoneNumber,
+          website: business.website,
+          offer: business.offer,
+          bio: business.bio
+        }));
+        setMerchantData(formattedMerchants);
+      })
+      .catch((error) => {
+        alert(`Error: ${error.message}`);
+        console.error(error);
+      })
   }, []);
 
-  // Render the points section
-  const renderBusinessCatalog = () => {
+  useEffect(() => {
+    fetchMerchants();
+  }, [fetchMerchants]);
 
-    const [selectedBusiness, setSelectedBusiness] = useState<typeBusiness | null>(null);
-    const [showCoupons, setShowCoupons] = useState(false);
+  //Reusable component
+  const BusinessRow = ({ business }: { business: typeBusiness }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+
     return (
-      <View style={styles.catalogSection}>
-        {businesses.map((item, _) => (
-          <TouchableOpacity onPress={() => setSelectedBusiness(item)}>
-            <View style={styles.row}>
-
-
-              <Image source={{ uri: item.imageUri }} style={styles.image} />
-              {item.offer && <View style={styles.offerBadge}><Text style={styles.offerText}>OFFER</Text></View>}
-              <View style={styles.infoContainer}>
-                <Text style={styles.type}>Type: {item.type}</Text>
-                <Text style={styles.name}>{item.name}</Text>
+      <>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setModalVisible(true)}>
+          <View style={styles.card}>
+            <Image
+              source={{ uri: business?.imageUri }}
+              style={styles.imageRow}>
+            </Image>
+            {business?.offer === 1 && (
+              <View style={styles.offerContainer}>
+                <Text style={styles.offer}>OFFER AVAILABLE</Text>
               </View>
-
-              
-
+            )}
+            <View style={styles.overlay}>
+              <Text style={styles.businessName}>{business?.name}</Text>
+              <Text style={styles.businessType}>Fast Food</Text>
             </View>
-          </TouchableOpacity>
-        ))}
-          <Modal
-            visible={!!selectedBusiness}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => {
-              setSelectedBusiness(null)
-            }
-            }
-          >
-          <View style={styles.modalOverlay}>
-            <ScrollView contentContainerStyle={styles.modalContainer}>
-              <TouchableOpacity onPress={() => {
-                  setSelectedBusiness(null) 
-                  setShowCoupons(false)}
-                } style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>X</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Modal Panel Business Profile*/}
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>{business?.name}</Text>
+              <Image source={{ uri: business?.imageUri }} style={styles.modalImage} />
+              <View style={styles.modalRowContainer}>
+                <MaterialCommunityIcons
+                  style={styles.icon}
+                  name="map-marker"
+                  size={24}
+                  color="black"
+                />
+                <Text style={styles.modalDescription}>{business?.address}</Text>
+              </View>
+              <View style={styles.modalRowContainer}>
+                <MaterialCommunityIcons
+                  style={styles.icon}
+                  name="phone"
+                  size={24}
+                  color="black"
+                />
+                <Text style={styles.modalDescription}>{business?.contact}</Text>
+              </View>
+              <View style={styles.modalRowContainer}>
+                <MaterialCommunityIcons
+                  style={styles.icon}
+                  name="laptop"
+                  size={24}
+                  color="black"
+                />
+                <Text style={styles.modalDescription}>Website {business?.website}</Text>
+              </View>
+              <Text style={styles.modalDescription}>{business?.bio}</Text>
+
+
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
-
-              <Image source={{ uri: selectedBusiness?.imageUri }} style={styles.detailsImage} />
-              <Text style={styles.detailsName}>{selectedBusiness?.name}</Text>
-
-              <Text style={styles.sectionTitle}>ABOUT:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.type}</Text>
-
-              <Text style={styles.sectionTitle}>ADDRESS:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.address}</Text>
-
-              <Text style={styles.sectionTitle}>Contact Information:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.contact}</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.website}</Text>
-
-              <TouchableOpacity
-                style={styles.dropdownButton}
-                onPress={() => setShowCoupons(!showCoupons)}
-              >
-                <Text style={styles.dropdownButtonText}>
-                  {showCoupons ? 'Hide Offers' : 'View Offers'}
-                </Text>
-              </TouchableOpacity>
-
-              {showCoupons && selectedBusiness?.coupons && (
-                <View style={styles.couponContainer}>
-                  {selectedBusiness.coupons.map((coupon) => (
-                    <View key={coupon.id} style={styles.couponCard}>
-                      <View style={styles.qrCode}>
-                        <QRCode
-                          value={coupon.qrCode}
-                          size={80}
-                          color="black" />
-                      </View>
-                      <Text style={styles.couponText}>{coupon.name}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </ScrollView>
+            </View>
           </View>
         </Modal>
+      </>
+    );
+  }
+  
+
+
+  const mapBusinesses = () => {
+    return (
+      <View>
+        {merchantData.map((business, index) => {
+          return (
+            <BusinessRow
+              key={index}
+              business={business}
+            />
+          );
+        })}
       </View>
     );
-  };
+  }
+
 
   // Render the home screen 
   return (
@@ -209,12 +175,17 @@ export default function HomeScreen() {
             style={styles.headerImage}
           />
           <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>Business Catalog</Text>
+            <Text style={styles.welcomeText}>BUSINESS CATALOG</Text>
           </View>
         </View>
-        <View style={styles.container}>
-        {renderBusinessCatalog()}
-      </View>
+
+
+        <ScrollView style={styles.mainContainer}>
+          <View style={{ paddingBottom: 45 }}>
+            {mapBusinesses()}
+          </View>
+        </ScrollView>
+
       </View>
 
     </SafeAreaView >
@@ -234,111 +205,11 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     backgroundColor: '#fff',
   },
-  image: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-  },
   headerText: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 71,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center'
-  },
-  couponCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  qrCode: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 32,
-    justifyContent: 'center',
-    margin: 5,
-    position: 'relative',
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 10,
-  },
-  closeButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  dropdownButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 5,
-  },
-  dropdownButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  sectionText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  detailsImage: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-  },
-  detailsName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 10,
-  }, 
-  offerBadge: {
-    backgroundColor: '#000',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    position: 'absolute',
-    right: 15,
-    top: 15,
-  },
-  offerText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  lower: {
-    flex: 1,
-    paddingTop: 200,
-    borderRadius: 32,
-    backgroundColor: '#ggg',
-    justifyContent: 'flex-end',
   },
   header: {
     flexDirection: 'row',
@@ -346,17 +217,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
-  },
-  newSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-    padding: 10,
-    borderRadius: 32,
-    margin: 5,
-    position: 'relative',
+    textAlign: 'center'
   },
   headerImage: {
     width: 71,
@@ -365,131 +228,150 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoContainer: {
+  card: {
+    position: "relative",
+    borderRadius: 15,
+    overflow: "hidden",
+    margin: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  mainContainer: {
+    backgroundColor: '#f5f5f5',
     flex: 1,
+    paddingTop: 20,
+    padding:15,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
   },
-  type: {
-    fontSize: 14,
-    color: '#555',
+  imageRow: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
   },
-  name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+  overlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "30%",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    padding: 10,
+    paddingLeft: 15,
   },
-  pointAmounts: {
-    width: 46,
-    height: 46,
-    marginRight: 10,
-  },
-  newBrandLogo: {
-    width: 120,
-    height: 120,
-    marginRight: 10,
-    borderRadius: 10,
-    margin: 5,
-  },
-  newLabelContainer: {
-    position: 'absolute',
+  offerContainer: {
+    position: "absolute",
     top: 10,
-    right: 10,
-    backgroundColor: 'black',
-    borderRadius: 32,
+    left: 10,
+    borderRadius: 15,
+    overflow: "hidden",
+    backgroundColor: 'green'
   },
-  newLabel: {
-    color: 'white',
+  offer: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#fff",
     paddingHorizontal: 10,
     paddingVertical: 5,
+    borderRadius: 15,
   },
-  newText: {
-    fontSize: 20,
-    marginLeft: 10,
-    fontWeight: 'bold',
-    flexShrink: 1,
+  businessType: {
+    fontSize: 14,
+    color: "#fff",
   },
-  pointsSection: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
-    paddingBottom: 50,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+  businessName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
   },
-  catalogSection: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
-    paddingBottom: 50,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-  },
-  couponText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    flexShrink: 1,
-  },
-  couponContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-    width: '100%',
-  },
-  coupon: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 32,
-    alignItems: 'center',
-    marginBottom: 10,
-    marginVertical: 24,
-    minHeight: 75
-  },
-  pointContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  pointText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
-  transactionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  transactionText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  page: {
+  //Styles for the business modals
+  modalBackground: {
     flex: 1,
-    padding: 15,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-    maxHeight: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  dotsContainer: {
-    flexDirection: 'row',
+  modalContainer: {
+    width: "95%",
+    backgroundColor: "#fff",
+    borderRadius: 46,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalImage: {
+    width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 10,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
+  modalDescription: {
+    fontSize: 16,
+    textAlign: "center",
+    paddingTop: 20,
+    fontWeight: 'bold'
   },
-  activeDot: {
-    backgroundColor: 'black',
+  icon: {
+    width: 24,
+    height: 24,
+    marginTop: 20,
   },
-  inactiveDot: {
-    backgroundColor: 'gray',
+  closeButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 20
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    
+  },
+  //BUSINESS PROFILE PAGE STYLES
+  image: {
+    width: "130%",
+    height: "130%",
+    marginTop: -30,
+    marginLeft: -75,
+  },
+  orangeOverlay: {
+    backgroundColor: "#E95F23",
+    width: width * 0.9,
+    height: 70,
+    borderRadius: 12,
+    position: "absolute",
+    top: 120,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 16,
   },
 });
+
