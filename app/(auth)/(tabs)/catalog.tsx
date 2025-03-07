@@ -7,134 +7,86 @@ import QRCode from 'react-native-qrcode-svg';
 
 export default function HomeScreen() {
 
-  // Array of pages to display
-  const pages = [
-    {
-      key: '1',
-      imageUri: 'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-      text: 'Shawerma Plus has joined 1Point!',
-    },
-    {
-      key: '2',
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-      text: 'Williams Fresh Cafe has joined 1Point!',
-    },
-    {
-      key: '3',
-      imageUri: 'https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8',
-      text: "Tahini's has joined 1Point!",
-    },
-  ];
-
   type typeBusiness = {
-    key: string,
-    imageUri: string,
-    name: string,
-    type: string,
-    address: string,
-    contact: string,
-    website: string,
-    offer: boolean,
-    coupons: coupon[]
-  }
-
-  type coupon = {
     id: string,
     name: string,
-    qrCode: string,
+    address: string,
+    phoneNumber: string,
+    website: string,
+    bio: string,
+    logoURL: string,
+    type: string,
+    pointsPerDollar: number,
+    status: string,
+    ongoingOffers: number
   }
 
-  const businesses = [
-    {
-      key: '1',
-      imageUri: 'https://pbs.twimg.com/profile_images/1715769848838381568/5ZjyeyH-_400x400.jpg',
-      name: 'Shawerma Plus',
-      type: "Fast Food",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: true,
-      coupons: [
-        { id: '102', name: '15% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-      ]
-    },
-    {
-      key: '2',
-      imageUri: 'https://pbs.twimg.com/profile_images/1008734359816269829/FiJnG7zn_400x400.jpg',
-      name: 'Williams Fresh Cafe!',
-      type: "Cafe",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: true,
-      coupons: [
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '100', name: '10% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-        { id: '101', name: '5% Off New Collection', qrCode: 'https://example.com/qr2.png' },
-      ]
-    },
-    {
-      key: '3',
-      imageUri: 'https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8',
-      name: "Tahini's!",
-      type: "Fast Food",
-      address: "123 Test Street",
-      contact: "(123) 456 7890",
-      website: "123Restaruant.com",
-      offer: false,
-      coupons: [
-      ]
-    },
-  ]
+  const [merchants, setMerchants] = useState([]);
+  const [selectedBusiness, setSelectedBusiness] = useState<typeBusiness | null>(null);
+  const [showCoupons, setShowCoupons] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(0);  // Track the current page
-  const pagerRef = useRef<PagerView>(null); // Reference to the pager view
-  const totalPages = pages.length; // Total number of pages
-
-  // Auto-scroll every 4 seconds to the next page in the list of pages 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPage(prevPage => {
-        // Calculate the next page to display 
-        const nextPage = (prevPage + 1) % totalPages;
-        // If the pagerRef is available, set the page to the next page
-        if (pagerRef.current) {
-          pagerRef.current.setPage(nextPage);
-        }
-        // Return the next page
-        return nextPage;
-      });
-    }, 4000);
-
-    return () => clearInterval(interval);
+    fetchMerchantData();
   }, []);
+
+  const fetchMerchantData = async () => {
+    try {
+      const user = auth().currentUser;
+      const userId = user?.uid;
+      const token = await user?.getIdToken(); // Retrieve the token from storage
+
+      const apiURL = `https://admin.1-point.ca/api/getMerchants`;
+      const response = await fetch(apiURL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+      const data = await response.json();
+      setMerchants(data)
+      
+    } catch (error) {
+      console.error("Error fetching merchant information:");
+    }
+  };
 
   // Render the points section
   const renderBusinessCatalog = () => {
 
-    const [selectedBusiness, setSelectedBusiness] = useState<typeBusiness | null>(null);
-    const [showCoupons, setShowCoupons] = useState(false);
     return (
       <View style={styles.catalogSection}>
-        {businesses.map((item, _) => (
-          <TouchableOpacity onPress={() => setSelectedBusiness(item)}>
-            <View style={styles.row}>
-
-
-              <Image source={{ uri: item.imageUri }} style={styles.image} />
-              {item.offer && <View style={styles.offerBadge}><Text style={styles.offerText}>OFFER</Text></View>}
-              <View style={styles.infoContainer}>
-                <Text style={styles.type}>Type: {item.type}</Text>
-                <Text style={styles.name}>{item.name}</Text>
+        {merchants.map((item: typeBusiness, index) => (
+          item.status === 'ACTIVE' && (
+            <TouchableOpacity key={item.id || index} onPress={() => setSelectedBusiness(item)}>
+              <View style={styles.row}>
+                {item.ongoingOffers > 0 && (
+                  <View style={styles.offerBadge}>
+                    <Text style={styles.offerText}>OFFER</Text>
+                  </View>
+                )}
+                {item.logoURL && (
+                <Image
+                  source={{ uri: item.logoURL }}
+                  style={styles.businessLogo}
+                />
+              )}
+                <View style={styles.infoContainer}>
+                  <Text style={styles.type}>Type: {item.type}</Text>
+                  <Text style={styles.name}>{item.name}</Text>
+                  {item.pointsPerDollar && (
+                    <Text style={styles.pointsPerDollar}>
+                      Points Rate: {item.pointsPerDollar} per $1
+                    </Text>
+                  )}
+                </View>
               </View>
-
-              
-
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )
         ))}
           <Modal
             visible={!!selectedBusiness}
@@ -154,43 +106,36 @@ export default function HomeScreen() {
                 <Text style={styles.closeButtonText}>X</Text>
               </TouchableOpacity>
 
-              <Image source={{ uri: selectedBusiness?.imageUri }} style={styles.detailsImage} />
-              <Text style={styles.detailsName}>{selectedBusiness?.name}</Text>
+              {selectedBusiness && (
+                <>
+                  {selectedBusiness.logoURL && (
+                    <Image
+                      source={{ uri: selectedBusiness.logoURL }}
+                      style={styles.modalBusinessLogo}
+                    />
+                  )}
+                  <Text style={styles.detailsName}>{selectedBusiness.name}</Text>
+                  {selectedBusiness.pointsPerDollar && (
+                    <Text style={styles.modalPointsPerDollar}>
+                      {selectedBusiness.ongoingOffers > 0
+                        ? `PROMOTIONAL POINTS RATE: ${selectedBusiness.pointsPerDollar} per $1`
+                        : `Points Rate: ${selectedBusiness.pointsPerDollar} per $1`
+                      }
+                    </Text>
+                  )}
+                  <Text style={styles.sectionTitle}>ABOUT:</Text>
+                  {selectedBusiness.type && <Text style={styles.sectionText}>{selectedBusiness.type}</Text>}
+                  {selectedBusiness.bio && <Text style={styles.sectionText}>{selectedBusiness.bio}</Text>}
 
-              <Text style={styles.sectionTitle}>ABOUT:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.type}</Text>
+                  <Text style={styles.sectionTitle}>ADDRESS:</Text>
+                  {selectedBusiness.address && <Text style={styles.sectionText}>{selectedBusiness.address}</Text>}
 
-              <Text style={styles.sectionTitle}>ADDRESS:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.address}</Text>
-
-              <Text style={styles.sectionTitle}>Contact Information:</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.contact}</Text>
-              <Text style={styles.sectionText}>{selectedBusiness?.website}</Text>
-
-              <TouchableOpacity
-                style={styles.dropdownButton}
-                onPress={() => setShowCoupons(!showCoupons)}
-              >
-                <Text style={styles.dropdownButtonText}>
-                  {showCoupons ? 'Hide Offers' : 'View Offers'}
-                </Text>
-              </TouchableOpacity>
-
-              {showCoupons && selectedBusiness?.coupons && (
-                <View style={styles.couponContainer}>
-                  {selectedBusiness.coupons.map((coupon) => (
-                    <View key={coupon.id} style={styles.couponCard}>
-                      <View style={styles.qrCode}>
-                        <QRCode
-                          value={coupon.qrCode}
-                          size={80}
-                          color="black" />
-                      </View>
-                      <Text style={styles.couponText}>{coupon.name}</Text>
-                    </View>
-                  ))}
-                </View>
+                  <Text style={styles.sectionTitle}>Contact Information:</Text>
+                  {selectedBusiness.phoneNumber && <Text style={styles.sectionText}>{selectedBusiness.phoneNumber}</Text>}
+                  {selectedBusiness.website && <Text style={styles.sectionText}>{selectedBusiness.website}</Text>}
+                </>
               )}
+
             </ScrollView>
           </View>
         </Modal>
@@ -213,8 +158,10 @@ export default function HomeScreen() {
           </View>
         </View>
         <View style={styles.container}>
-        {renderBusinessCatalog()}
-      </View>
+          <ScrollView style={styles.scrollContainer}> 
+            {(merchants.length>0)  && renderBusinessCatalog()}
+          </ScrollView>
+        </View>
       </View>
 
     </SafeAreaView >
@@ -314,11 +261,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  pointsPerDollar: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 5,
+  },
   sectionTitle: {
     fontWeight: 'bold',
     fontSize: 16,
     marginTop: 10,
   }, 
+  modalPointsPerDollar: {
+    fontSize: 16,
+    color: '#555',
+    marginTop: 10,
+    fontWeight: 'bold',
+  },
+
   offerBadge: {
     backgroundColor: '#000',
     paddingVertical: 5,
@@ -345,6 +304,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  scrollContainer: {
+    flex: 1,
+  },
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -357,6 +319,18 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     margin: 5,
     position: 'relative',
+  },
+  modalBusinessLogo: {
+    width: 100, // Adjust size as needed
+    height: 100, // Adjust size as needed
+    borderRadius: 50, // Make it circular if desired
+    marginBottom: 10,
+  },
+  businessLogo: {
+    width: 50,  // Adjust size as needed
+    height: 50, // Adjust size as needed
+    borderRadius: 25, // Make it circular if desired
+    marginRight: 10,
   },
   headerImage: {
     width: 71,
