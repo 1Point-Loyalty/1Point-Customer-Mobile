@@ -5,7 +5,8 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
-  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import auth from "@react-native-firebase/auth";
 import QRCode from "react-native-qrcode-svg";
@@ -14,6 +15,7 @@ import ContentLoader, { Rect } from "react-content-loader/native";
 
 export default function TabTwoScreen() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -25,7 +27,6 @@ export default function TabTwoScreen() {
 
   const [encryptedQRCode, setEncryptedQRCode] = useState("INVALID");
 
-  // call fetchData every 5 minutes
   const fetchData = useCallback(async () => {
     setLoading(true);
     const user = auth().currentUser;
@@ -47,11 +48,9 @@ export default function TabTwoScreen() {
         return response.json();
       })
       .then((data) => {
-        // format dates
         const formattedData = {
           ...data[0],
           createdAt: moment(data[0].createdAt).format("MM/YY"),
-          // format the most recent transaction date
           mostRecentTransaction: data[0].mostRecentTransaction
             ? moment(data[0].mostRecentTransaction).format("YYYY/MM/DD")
             : null,
@@ -86,6 +85,7 @@ export default function TabTwoScreen() {
 
     await new Promise((r) => setTimeout(r, 2000));
     setLoading(false);
+    setRefreshing(false);
   }, []);
 
   useEffect(() => {
@@ -96,10 +96,19 @@ export default function TabTwoScreen() {
     return () => clearInterval(autoRefresh);
   }, [fetchData]);
 
-  // Render the qr page
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchData();
+  }, [fetchData]);
+
   return (
     <SafeAreaView style={styles.main}>
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.header}>
           <Image
             source={require("@/assets/images/1Point_Logo.png")}
@@ -180,92 +189,87 @@ export default function TabTwoScreen() {
             )}
           </View>
         </View>
-      </View>
 
-      <View style={styles.lower}>
-        <View style={styles.pointsSection}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Current Point Balance:</Text>
+        <View style={styles.lower}>
+          <View style={styles.pointsSection}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Current Point Balance:</Text>
 
-            <View style={styles.pointContainer}>
-              <Image
-                source={require("@/assets/images/1Point_Logo.png")}
-                style={styles.pointAmounts}
-              />
+              <View style={styles.pointContainer}>
+                <Image
+                  source={require("@/assets/images/1Point_Logo.png")}
+                  style={styles.pointAmounts}
+                />
+                {loading ? (
+                  <ContentLoader
+                    speed={1}
+                    width={200}
+                    height={30}
+                    viewBox="125 0 200 30"
+                    backgroundColor="#f3f3f3"
+                    foregroundColor="#ecebeb"
+                  >
+                    <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                  </ContentLoader>
+                ) : (
+                  <Text style={styles.pointText}>
+                    {userData.currentPoints ? userData.currentPoints : 0}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Total Points Collected:</Text>
+
+              <View style={styles.pointContainer}>
+                <Image
+                  source={require("@/assets/images/1Point_Logo.png")}
+                  style={styles.pointAmounts}
+                />
+                {loading ? (
+                  <ContentLoader
+                    speed={1}
+                    width={200}
+                    height={30}
+                    viewBox="125 0 200 30"
+                    backgroundColor="#f3f3f3"
+                    foregroundColor="#ecebeb"
+                  >
+                    <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
+                  </ContentLoader>
+                ) : (
+                  <Text style={styles.pointText}>
+                    {userData.totalPoints ? userData.totalPoints : 0}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Last Transaction:</Text>
               {loading ? (
                 <ContentLoader
                   speed={1}
                   width={200}
                   height={30}
-                  viewBox="100 0 200 30"
+                  viewBox="25 0 200 30"
                   backgroundColor="#f3f3f3"
                   foregroundColor="#ecebeb"
                 >
                   <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
                 </ContentLoader>
               ) : (
-                <Text style={styles.pointText}>
-                  {userData.currentPoints ? userData.currentPoints : 0}
+                <Text style={styles.transactionText}>
+                  {userData.mostRecentTransaction
+                    ? userData.mostRecentTransaction
+                    : "N/A"}
                 </Text>
               )}
             </View>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Total Points Collected:</Text>
-
-            <View style={styles.pointContainer}>
-              <Image
-                source={require("@/assets/images/1Point_Logo.png")}
-                style={styles.pointAmounts}
-              />
-              {loading ? (
-                <ContentLoader
-                  speed={1}
-                  width={200}
-                  height={30}
-                  viewBox="100 0 200 30"
-                  backgroundColor="#f3f3f3"
-                  foregroundColor="#ecebeb"
-                >
-                  <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
-                </ContentLoader>
-              ) : (
-                <Text style={styles.pointText}>
-                  {userData.totalPoints ? userData.totalPoints : 0}
-                </Text>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Last Transaction:</Text>
-            {loading ? (
-              <ContentLoader
-                speed={1}
-                width={200}
-                height={30}
-                viewBox="0 0 200 30"
-                backgroundColor="#f3f3f3"
-                foregroundColor="#ecebeb"
-              >
-                <Rect x="0" y="0" rx="5" ry="5" width="200" height="30" />
-              </ContentLoader>
-            ) : (
-              <Text style={styles.transactionText}>
-                {userData.mostRecentTransaction
-                  ? userData.mostRecentTransaction
-                  : "N/A"}
-              </Text>
-            )}
-          </View>
-          <View style={styles.loginContainer}>
-            <TouchableOpacity onPress={fetchData} style={styles.loginButton}>
-              <Text style={styles.loginButtonText}>Refresh</Text>
-            </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
