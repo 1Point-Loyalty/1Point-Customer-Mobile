@@ -30,8 +30,8 @@ export default function HomeScreen() {
     {
       key: "3",
       imageUri:
-        "https://play-lh.googleusercontent.com/Ej7CgScjyiwHdjKHQ0YBgFKbCm73kQUAi0LSiOZO4EKwu_nI7kVD3a8DAqk4evkIYn8",
-      text: "Tahini's has joined 1Point!",
+        "https://downtownkelowna.com/wp-content/uploads/2024/01/340612243_1373366376836948_2942410418678137236_n.jpg",
+      text: "D Spot has joined 1Point!",
     },
   ];
 
@@ -48,7 +48,7 @@ export default function HomeScreen() {
     mostRecentTransaction: "",
   });
 
-  const fetchData = useCallback (async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     const user = auth().currentUser;
     const userId = user?.uid;
